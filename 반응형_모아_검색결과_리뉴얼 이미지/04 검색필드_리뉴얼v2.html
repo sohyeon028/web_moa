@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTT 통합 검색</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts (Pretendard) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -0.02em; }
+        html { overflow-y: scroll; }
+        
+        .ranking-list-item:hover { background-color: #27272a; }
+        .ranking-list-item.active { background-color: #27272a; color: #fff; }
+        /* Hide inline hover previews inside items to avoid duplicate images */
+        .ranking-list-item .absolute.top-0.left-full { display: none !important; }
+    </style>
+    <!-- Tailwind CSS Custom Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'moa-purple': '#a78bfa',
+                        'moa-indigo': '#818cf8',
+                        'moa-bg': '#0a0514',
+                        'zinc': {
+                            '300': '#d4d4d8', '400': '#a1a1aa', '500': '#71717a',
+                            '600': '#52525b', '700': '#3f3f46', '800': '#27272a',
+                            '900': '#18181b'
+                        }
+                    },
+                    fontFamily: { sans: ['Pretendard', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+</head>
+<body style="background: linear-gradient(180deg, #000 0%, #0a0514 50%, #000 100%);" class="text-zinc-300">
+
+    <!-- 전체 레이아웃 컨테이너 -->
+    <div class="flex flex-col min-h-screen">
+        <!-- 헤더 -->
+        <header class="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md border-b border-zinc-800">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center gap-8">
+                        <a href="./02 홈화면_리뉴얼V12.html" class="flex items-center gap-2 flex-shrink-0">
+                            <div class="w-6 h-6 rounded bg-gradient-to-br from-purple-400 to-indigo-500"></div>
+                            <span class="font-bold text-lg text-white">MOA</span>
+                        </a>
+                    </div>
+                    <div class="hidden md:flex flex-1 justify-center px-8">
+                        <div class="relative w-full max-w-sm group">
+                            <input type="text" placeholder="작품, 인물, 컬렉션을 검색해보세요" class="w-full h-10 bg-zinc-800 border border-zinc-600 rounded-lg pl-10 pr-4 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:border-purple-500 transition" onclick="window.location.href='./05 검색 결과_리뉴얼V7_평균.html'">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-search text-zinc-400 text-sm"></i>
+                            </div>
+                            <!-- 호버 시 나타나는 이미지 제거됨 -->
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button class="md:hidden w-9 h-9 rounded-full hover:bg-zinc-900 flex items-center justify-center transition flex-shrink-0" onclick="window.location.href='./05 검색 결과_리뉴얼V7_평균.html'"><i class="fas fa-search text-sm"></i></button>
+                        <button class="w-9 h-9 rounded-full hover:bg-zinc-900 flex items-center justify-center transition flex-shrink-0"><i class="far fa-bell text-sm"></i></button>
+                        <button class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 overflow-hidden flex-shrink-0" onclick="window.location.href='./08 마이페이지_리뉴얼V5.html'"><img src="./내 프로필 사진/profile.jpg" alt="profile" class="w-full h-full object-cover"></button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 메인 콘텐츠 영역 -->
+        <main class="flex-1 max-w-7xl mx-auto w-full py-12 mt-16 px-4 sm:px-6 lg:px-8">
+             <div class="space-y-20">
+                <!-- 실시간 인기 검색어 (원본 기능 + 리뉴얼 스타일 적용) -->
+                 <section class="relative group">
+                     <div class="absolute right-0 top-0 w-1/2 h-full overflow-hidden rounded-2xl hidden md:block">
+                          <img id="ranking-bg-image" src="./반응형_모아_검색필드/1.체인소맨.jpg" class="w-full h-full object-cover transition-opacity duration-500">
+                          <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30"></div>
+                     </div>
+                     <div class="relative flex gap-8">
+                        <div class="w-full md:w-1/2">
+                            <h3 class="text-2xl font-bold text-white mb-4">실시간 인기 검색어 TOP 10</h3>
+                             <div class="mb-6 flex items-center gap-2 flex-wrap">
+                                <button class="px-4 py-2 text-base font-semibold rounded-full bg-zinc-800 text-zinc-300">전체</button>
+                                <button class="px-4 py-2 text-base font-semibold rounded-full text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300">코미디</button>
+                                <button class="px-4 py-2 text-base font-semibold rounded-full text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300">로맨스</button>
+                                <button class="px-4 py-2 text-base font-semibold rounded-full text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300">액션</button>
+                                <button class="px-4 py-2 text-base font-semibold rounded-full text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300" onclick="window.location.href='./06 모든비디오장르_리뉴얼.html'">다른 장르 보기 <i class="fa-solid fa-chevron-down ml-1 text-xs"></i></button>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 text-sm">
+                                <ol class="space-y-2" id="ranking-list">
+                                    <li class="ranking-list-item p-3 rounded-lg cursor-pointer flex items-center gap-4 active group" data-image="./반응형_모아_검색필드/1.체인소맨.jpg">
+                                        <span class="text-2xl font-bold w-7 text-center text-moa-indigo">1</span>
+                                        <p class="font-semibold flex-1 text-base">체인소 맨</p>
+                                        <div class="flex items-center gap-1 text-red-400 text-base"><i class="fa-solid fa-caret-up text-sm"></i><span>2</span></div>
+                                        <!-- 호버 시 나타나는 이미지 -->
+                                        <div class="absolute top-0 left-full ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
+                                            <div class="w-64 h-40 rounded-lg overflow-hidden shadow-2xl border border-zinc-700">
+                                                <img src="./반응형_모아_검색필드/1.체인소맨.jpg" alt="체인소맨" class="w-full h-full object-cover">
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="ranking-list-item p-3 rounded-lg cursor-pointer flex items-center gap-4 group" data-image="./반응형_모아_검색필드/2.루드비히.jpg">
+                                        <span class="text-2xl font-bold w-7 text-center text-moa-indigo">2</span>
+                                        <p class="font-semibold flex-1 text-base">루드 비히: 퍼즐로 푸는 진실</p>
+                                        <div class="flex items-center gap-1 text-gray-400 text-base">-</div>
+                                        <!-- 호버 시 나타나는 이미지 -->
+                                        <div class="absolute top-0 left-full ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
+                                            <div class="w-64 h-40 rounded-lg overflow-hidden shadow-2xl border border-zinc-700">
+                                                <img src="./반응형_모아_검색필드/2.루드비히.jpg" alt="루드비히" class="w-full h-full object-cover">
+                                            </div>
+                                        </div>
+                                    </li>
+                                     <li class="ranking-list-item p-3 rounded-lg cursor-pointer flex items-center gap-4 group" data-image="./반응형_모아_검색필드/3.귀멸의칼날1기.jpg">
+                                        <span class="text-2xl font-bold w-7 text-center text-moa-indigo">3</span>
+                                        <p class="font-semibold flex-1 text-base">귀멸의 칼날 1기</p>
+                                        <div class="flex items-center gap-1 text-blue-400 text-base"><i class="fa-solid fa-caret-down text-sm"></i><span>1</span></div>
+                                        <!-- 호버 시 나타나는 이미지 -->
+                                        <div class="absolute top-0 left-full ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
+                                            <div class="w-64 h-40 rounded-lg overflow-hidden shadow-2xl border border-zinc-700">
+                                                <img src="./반응형_모아_검색필드/3.귀멸의칼날1기.jpg" alt="귀멸의칼날1기" class="w-full h-full object-cover">
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="ranking-list-item p-3 rounded-lg cursor-pointer flex items-center gap-4 group" data-image="./반응형_모아_검색필드/4.나루토.jpg">
+                                        <span class="text-2xl font-bold w-7 text-center text-zinc-400">4</span>
+                                        <p class="font-semibold flex-1 text-base">나루토 1기</p>
+                                        <div class="text-sm font-bold text-green-400">NEW</div>
+                                        <!-- 호버 시 나타나는 이미지 -->
+                                        <div class="absolute top-0 left-full ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
+                                            <div class="w-64 h-40 rounded-lg overflow-hidden shadow-2xl border border-zinc-700">
+                                                <img src="./반응형_모아_검색필드/4.나루토.jpg" alt="나루토" class="w-full h-full object-cover">
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="ranking-list-item p-3 rounded-lg cursor-pointer flex items-center gap-4 group" data-image="./반응형_모아_검색필드/5.타로일곱장.jpg">
+                                        <span class="text-2xl font-bold w-7 text-center text-zinc-400">5</span>
+                                        <p class="font-semibold flex-1 text-base">타로: 일곱 장의 이야기</p>
+                                        <div class="flex items-center gap-1 text-gray-400 text-base">-</div>
+                                        <!-- 호버 시 나타나는 이미지 -->
+                                        <div class="absolute top-0 left-full ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
+                                            <div class="w-64 h-40 rounded-lg overflow-hidden shadow-2xl border border-zinc-700">
+                                                <img src="./반응형_모아_검색필드/5.타로일곱장.jpg" alt="타로일곱장" class="w-full h-full object-cover">
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ol>
+                                <ol class="space-y-2">
+                                    <li class="ranking-list-item p-3 rounded-lg cursor-pointer flex items-center gap-4 group" data-image="./반응형_모아_검색필드/6.그린북.jpg">
+                                        <span class="text-2xl font-bold w-7 text-center text-zinc-400">6</span>
+                                        <p class="font-semibold flex-1 text-base">그린 북</p>
+                                        <div class="flex items-center gap-1 text-red-400 text-base"><i class="fa-solid fa-caret-up text-sm"></i><span>1</span></div>
+                                        <!-- 호버 시 나타나는 이미지 -->
+                                        <div class="absolute top-0 left-full ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
+                                            <div class="w-64 h-40 rounded-lg overflow-hidden shadow-2xl border border-zinc-700">
+                                                <img src="./반응형_모아_검색필드/6.그린북.jpg" alt="그린북" class="w-full h-full object-cover">
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="ranking-list-item p-3 rounded-lg cursor-pointer flex items-center gap-4 group" data-image="./반응형_모아_검색필드/7.시멘틱에러.jpg">
+                                        <span class="text-2xl font-bold w-7 text-center text-zinc-400">7</span>
+                                        <p class="font-semibold flex-1 text-base">시맨틱 에러</p>
+                                         <div class="flex items-center gap-1 text-blue-400 text-base"><i class="fa-solid fa-caret-down text-sm"></i><span>3</span></div>
+                                         <!-- 호버 시 나타나는 이미지 -->
+                                         <div class="absolute top-0 left-full ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
+                                             <div class="w-64 h-40 rounded-lg overflow-hidden shadow-2xl border border-zinc-700">
+                                                 <img src="./반응형_모아_검색필드/7.시멘틱에러.jpg" alt="시멘틱에러" class="w-full h-full object-cover">
+                                             </div>
+                                         </div>
+                                    </li>
+                                    <li class="ranking-list-item p-3 rounded-lg cursor-pointer flex items-center gap-4 group" data-image="./반응형_모아_검색필드/8.강철의연금.jpg">
+                                        <span class="text-2xl font-bold w-7 text-center text-zinc-400">8</span>
+                                        <p class="font-semibold flex-1 text-base">강철의 연금술사...</p>
+                                        <div class="flex items-center gap-1 text-gray-400 text-base">-</div>
+                                        <!-- 호버 시 나타나는 이미지 -->
+                                        <div class="absolute top-0 left-full ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
+                                            <div class="w-64 h-40 rounded-lg overflow-hidden shadow-2xl border border-zinc-700">
+                                                <img src="./반응형_모아_검색필드/8.강철의연금.jpg" alt="강철의연금" class="w-full h-full object-cover">
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="ranking-list-item p-3 rounded-lg cursor-pointer flex items-center gap-4 group" data-image="./반응형_모아_검색필드/9.포커페이스.jpg">
+                                        <span class="text-2xl font-bold w-7 text-center text-zinc-400">9</span>
+                                        <p class="font-semibold flex-1 text-base">포커 페이스</p>
+                                        <div class="text-sm font-bold text-green-400">NEW</div>
+                                        <!-- 호버 시 나타나는 이미지 -->
+                                        <div class="absolute top-0 left-full ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
+                                            <div class="w-64 h-40 rounded-lg overflow-hidden shadow-2xl border border-zinc-700">
+                                                <img src="./반응형_모아_검색필드/9.포커페이스.jpg" alt="포커페이스" class="w-full h-full object-cover">
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="ranking-list-item p-3 rounded-lg cursor-pointer flex items-center gap-4 group" data-image="./반응형_모아_검색필드/10.해변의에드랑체.jpg">
+                                        <span class="text-2xl font-bold w-7 text-center text-zinc-400">10</span>
+                                        <p class="font-semibold flex-1 text-base">해변의 에트랑제</p>
+                                        <div class="flex items-center gap-1 text-blue-400 text-base"><i class="fa-solid fa-caret-down text-sm"></i><span>2</span></div>
+                                        <!-- 호버 시 나타나는 이미지 -->
+                                        <div class="absolute top-0 left-full ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
+                                            <div class="w-64 h-40 rounded-lg overflow-hidden shadow-2xl border border-zinc-700">
+                                                <img src="./반응형_모아_검색필드/10.해변의에드랑체.jpg" alt="해변의에드랑체" class="w-full h-full object-cover">
+                                            </div>
+                                        </div>
+                                    </li>
+                            </div>
+                        </div>
+                     </div>
+                </section>
+                
+                <!-- 추천 섹션 -->
+                 <section class="space-y-12">
+                     <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-2xl font-bold text-white">당신이 선호하는 장르</h3>
+                            <a href="./06 모든비디오장르_리뉴얼.html" class="text-base font-medium text-zinc-400 hover:text-white">모두보기</a>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12">
+                            <a href="./07 장르디테일_리뉴얼.html" data-genre="스릴러" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-red-600 to-rose-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-bolt absolute top-4 right-4 text-6xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-xl font-bold text-white">스릴러</span>
+                </a>
+                            <a href="genre_detail.html?genre=로맨스" data-genre="로맨스" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-rose-500 to-pink-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-full h-full opacity-20 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 2px); background-size: 2rem 2rem;"></div>
+                    <i class="fa-solid fa-heart-pulse absolute top-4 right-4 text-6xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-xl font-bold text-white">로맨스</span>
+                </a>
+                            <a href="genre_detail.html?genre=SF" data-genre="SF" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-teal-500 to-cyan-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-rocket absolute top-4 right-4 text-6xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-xl font-bold text-white">SF</span>
+                </a>
+                            <a href="genre_detail.html?genre=액션" data-genre="액션" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-orange-600 to-red-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-500/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-explosion absolute top-4 right-4 text-6xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-xl font-bold text-white">액션</span>
+                </a>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-2xl font-bold text-white">이런 국가는 어때요?</h3>
+                            <a href="all_genres.html" class="text-base font-medium text-zinc-400 hover:text-white">모두보기</a>
+                        </div>
+                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12">
+                            <a href="genre_detail.html?genre=한국 드라마" data-genre="한국 드라마" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-purple-500 to-pink-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-tv absolute top-4 right-4 text-6xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-xl font-bold text-white">한국 드라마</span>
+                </a>
+                            <a href="genre_detail.html?genre=미국 영화" data-genre="미국 영화" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-blue-500 to-indigo-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <svg class="absolute -bottom-12 -left-12 w-48 h-48 text-indigo-400/50 transition-transform duration-300 group-hover:scale-[1.15]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+                    </svg>
+                    <i class="fa-solid fa-film absolute top-4 right-4 text-6xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-xl font-bold text-white">미국 영화 </span>
+                </a>
+                             <a href="genre_detail.html?genre=일본 애니메이션" data-genre="일본 애니메이션" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-purple-600 to-indigo-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <svg class="absolute -bottom-12 -left-12 w-48 h-48 text-purple-400/50 transition-transform duration-300 group-hover:scale-[1.15]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+                    </svg>
+                    <i class="fa-solid fa-torii-gate absolute top-4 right-4 text-6xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-xl font-bold text-white">일본 애니메이션</span>
+                </a>
+                <a href="genre_detail.html?genre=영국 시리즈" data-genre="영국 시리즈" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-purple-500 to-pink-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-crown absolute top-4 right-4 text-6xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-xl font-bold text-white">영국 시리즈</span>
+                </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 취향으로 탐색하기 -->
+                <section>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-white">취향으로 탐색하기</h3>
+                        <a href="all_genres.html" class="text-base font-medium text-zinc-400 hover:text-white">모두 보기</a>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12">
+                        <a href="#" class="group relative aspect-video rounded-xl p-4 flex items-end bg-gradient-to-br from-pink-500 to-rose-600 hover:scale-105 transition-transform duration-300 overflow-hidden"><i class="fa-solid fa-star absolute top-4 right-4 text-5xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i><div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div><h4 class="text-xl font-bold text-white relative z-10">MOA 독점</h4></a>
+                        <a href="genre_detail.html?genre=일본 드라마 BEST" data-genre="일본 드라마" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-violet-600 to-purple-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-violet-500/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-torii-gate absolute top-4 right-4 text-6xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-xl font-bold text-white">일본 드라마 BEST</span>
+                </a>
+                        <a href="genre_detail.html?genre=숏폼" data-genre="숏폼" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-rose-600 to-red-500 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-mobile-screen absolute top-4 right-4 text-5xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <span class="relative text-xl font-bold text-white">숏폼</span>
+                </a>
+                        <a href="genre_detail.html?genre=아트버스터" data-genre="아트버스터" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-indigo-500 to-purple-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-full h-full opacity-20 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 2px); background-size: 2rem 2rem;"></div>
+                    <i class="fa-solid fa-bomb absolute top-4 right-4 text-6xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-xl font-bold text-white">아트버스터</span>
+                </a>
+                    </div>
+                </section>
+             </div>
+        </main>
+        
+        <!-- ... (나머지 스크립트, GNB 등은 모두 이전과 동일) ... -->
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rankingListItems = document.querySelectorAll('.ranking-list-item');
+            const rankingBgImage = document.getElementById('ranking-bg-image');
+
+            rankingListItems.forEach(item => {
+                item.addEventListener('mouseover', () => {
+                    const newImage = item.getAttribute('data-image');
+                    if (newImage && rankingBgImage.src !== newImage) {
+                         rankingBgImage.style.opacity = 0;
+                         setTimeout(() => {
+                            rankingBgImage.src = newImage;
+                            rankingBgImage.style.opacity = 1;
+                        }, 200);
+                    }
+                    rankingListItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                });
+            });
+        });
+    </script>
+
+    <!-- ===== 최적 푸터 시작 ===== -->
+    <footer class="border-t border-zinc-800/50 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <!-- 평가 카운트 - improved 버전의 배지 디자인 -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900/50 rounded-xl border border-zinc-800">
+                    <i class="fas fa-star text-purple-400 text-base"></i>
+                    <span class="text-sm text-zinc-300">지금까지</span>
+                    <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">647,152,894</span>
+                    <span class="text-sm text-zinc-300">개의 평가가 쌓였어요</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row justify-between gap-8">
+                <!-- 왼쪽 정보 영역 -->
+                <div class="space-y-4 flex-1">
+                    <!-- 상단 약관 링크 -->
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">서비스 이용약관</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">개인정보 처리방침</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">회사 안내</a>
+                    </div>
+
+                    <!-- 문의 정보 -->
+                    <div class="space-y-1.5 text-xs text-zinc-500">
+                        <div>
+                            <span>고객센터</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:cs@moa.com" class="hover:text-purple-400 transition">cs@moa.com</a>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <span>02-123-4567</span>
+                        </div>
+                        <div>
+                            <span>광고 문의</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:ad@moa.com" class="hover:text-purple-400 transition">ad@moa.com</a>
+                        </div>
+                        <div>
+                            <span>제휴 및 대외 협력</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="https://moa.team/contact" class="hover:text-purple-400 transition">moa.team/contact</a>
+                        </div>
+                    </div>
+
+                    <!-- 회사 정보 & 저작권 -->
+                    <div class="space-y-1.5">
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-600">
+                            <span>(주)모아</span>
+                            <span>•</span>
+                            <span>대표 김모아</span>
+                            <span>•</span>
+                            <span>사업자등록번호 123-45-67890</span>
+                            <span>•</span>
+                            <span>서울시 강남구 테헤란로 417</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 오른쪽 언어 & 소셜 영역 -->
+                <div class="flex flex-col items-start lg:items-end gap-4 lg:gap-6">
+                    <!-- 언어 선택 -->
+                    <div class="relative">
+                        <select class="appearance-none bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 hover:bg-zinc-800 transition-all cursor-pointer pr-10 font-medium">
+                            <option value="ko" selected>한국어</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                        </select>
+                        <i class="fas fa-chevron-down text-xs text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                    
+                    <!-- 소셜 아이콘 -->
+                    <div class="flex items-center gap-3">
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-purple-500/10 border border-zinc-700/50 hover:border-purple-500/50 flex items-center justify-center transition-all group" aria-label="Facebook">
+                            <i class="fa-brands fa-facebook text-base text-zinc-400 group-hover:text-purple-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-indigo-500/10 border border-zinc-700/50 hover:border-indigo-500/50 flex items-center justify-center transition-all group" aria-label="Twitter">
+                            <i class="fa-brands fa-twitter text-base text-zinc-400 group-hover:text-indigo-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-pink-500/10 border border-zinc-700/50 hover:border-pink-500/50 flex items-center justify-center transition-all group" aria-label="Instagram">
+                            <i class="fa-brands fa-instagram text-base text-zinc-400 group-hover:text-pink-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-red-500/10 border border-zinc-700/50 hover:border-red-500/50 flex items-center justify-center transition-all group" aria-label="YouTube">
+                            <i class="fa-brands fa-youtube text-base text-zinc-400 group-hover:text-red-400 transition-colors"></i>
+                        </a>
+                    </div>
+
+                    <!-- 저작권 - 우측 하단 -->
+                    <div class="text-xs text-zinc-600 whitespace-nowrap">
+                        © 2025 MOA, Inc. All rights reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- ===== 최적 푸터 끝 ===== -->
+</body>
+</html>

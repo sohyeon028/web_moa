@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOA | 마이페이지</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <style>
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: #05040a;
+            color: #e5e5e5;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.02em;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .section-card { /* Original simple card for overview */
+            background-color: rgba(17, 16, 23, 0.5);
+            border: 1px solid #27272a;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .gradient-border-card { /* New card style for report sections */
+            border: 1px solid transparent;
+            background: linear-gradient(rgba(24, 24, 27, 0.7), rgba(24, 24, 27, 0.7)) padding-box,
+                        linear-gradient(135deg, #a78bfa40, #818cf840) border-box;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .gradient-border-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(167, 139, 250, 0.1);
+        }
+        .side-nav-link {
+            transition: all 0.2s ease-in-out;
+            border-left: 3px solid transparent;
+        }
+        .side-nav-link:hover {
+            background-color: rgba(39, 39, 42, 0.5);
+        }
+        @media (max-width: 768px) {
+            footer { display: none !important; }
+        }
+        .side-nav-link.active {
+            background-color: rgba(39, 39, 42, 0.5);
+            border-left-color: #a78bfa;
+            color: #fff;
+            font-weight: 600;
+        }
+        .side-nav-heading {
+            padding: 0.75rem 0.75rem 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        /* 모바일 세그먼트 컨트롤 */
+        .segment-tab {
+            transition: all 0.2s ease;
+        }
+        .segment-tab.active {
+            color: white;
+        }
+
+        /* 모바일 콘텐츠 섹션 */
+        .mobile-content-section {
+            display: none;
+        }
+        .mobile-content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .section-title {
+            color: #e5e7eb;
+            text-align: center;
+            margin-bottom: 1.5rem; /* 24px */
+        }
+        .spectrum-map {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            background-image: 
+                repeating-linear-gradient(rgba(55, 65, 81, 0.3) 0 1px, transparent 1px 100%),
+                repeating-linear-gradient(90deg, rgba(55, 65, 81, 0.3) 0 1px, transparent 1px 100%);
+            background-size: 10% 10%;
+        }
+        .spectrum-axis { position: absolute; background-color: rgba(156, 163, 175, 0.3); }
+        .spectrum-dot { 
+            position: absolute; 
+            transform: translate(-50%, -50%); 
+            z-index: 10; 
+        }
+        
+        /* Tooltip styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip-icon {
+            cursor: help;
+            transition: all 0.2s ease;
+        }
+        
+        .tooltip-icon:hover {
+            color: #a78bfa;
+            transform: scale(1.1);
+        }
+        
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #1f1f23, #2a2a2e);
+            border: 1px solid #a78bfa40;
+            border-radius: 8px;
+            padding: 8px 12px;
+            white-space: nowrap;
+            font-size: 12px;
+            color: #e5e7eb;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #1f1f23;
+        }
+        
+        .tooltip-container:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px);
+            z-index: 100; display: none; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: #121117; 
+            border: 1px solid #27272a; 
+            border-radius: 16px;
+            padding: 2rem; width: 90%; max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            position: relative;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .choice-button, .keyword-tag { 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            border: 1px solid #404040; 
+            background-color: #2a2a2f;
+        }
+        .choice-button:hover, .keyword-tag:hover {
+            background-color: #3a3a3f;
+            border-color: #5a5a5f;
+        }
+        .choice-button.active, .keyword-tag.active { 
+            background-color: #a78bfa; 
+            color: #0a0a0f; 
+            border-color: #a78bfa; 
+            font-weight: 600; 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3); 
+        }
+        .choice-button.active i, .keyword-tag.active i {
+            color: #0a0a0f !important;
+        }
+        .choice-button.active span, .keyword-tag.active span {
+            color: #0a0a0f !important;
+        }
+        .choice-button.active .text-xs, .keyword-tag.active .text-xs {
+            color: #0a0a0f !important;
+        }
+        .keyword-tag.avoid { 
+            border-color: #ef4444; 
+            background-color: rgba(239, 68, 68, 0.15); 
+            color: #fca5a5; 
+        }
+        .keyword-tag.avoid:hover {
+            background-color: rgba(239, 68, 68, 0.25);
+        }
+        .keyword-tag.avoid.active { 
+            background-color: #ef4444; 
+            color: #121117; 
+            border-color: #ef4444; 
+        }
+        .modal-step { display: none; }
+        .modal-step.active { display: block; animation: fadeIn 0.5s ease-out; }
+    </style>
+</head>
+<body class="bg-black">
+    <div class="fixed top-0 left-0 w-full h-full bg-gradient-to-b from-[#0a0514] via-black to-black -z-10"></div>
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-black border-b border-zinc-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-8">
+                    <a href="./02 홈화면_리뉴얼V12.html" class="flex items-center gap-2 flex-shrink-0">
+                        <img src="./logo.svg" alt="MOA" class="h-5 w-auto">
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex flex-1 justify-center px-8">
+                    <div class="relative w-full max-w-sm">
+                        <input type="text" placeholder="작품, 인물, 컬렉션을 검색해보세요" onclick="window.location.href='./04 검색필드_리뉴얼v2.html'" class="w-full h-10 bg-zinc-800 border border-zinc-600/50 rounded-lg pl-10 pr-4 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:border-purple-500 transition">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fas fa-search text-zinc-400 text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button class="w-11 h-11 rounded-full hover:bg-zinc-800/50 flex items-center justify-center transition flex-shrink-0"><i class="far fa-bell text-base"></i></button>
+                    <button class="hidden md:flex w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 overflow-hidden flex-shrink-0" onclick="window.location.href='./08 마이페이지_리뉴얼V5.html'"><img src="./내 프로필 사진/profile.jpg" alt="profile" class="w-full h-full object-cover"></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
+            
+            <!-- 모바일 프로필 헤더 -->
+            <div class="lg:hidden mb-6">
+                <div class="text-center">
+                    <div class="relative inline-block">
+                        <img src="./내 프로필 사진/profile.jpg" alt="프로필" class="w-24 h-24 rounded-full border-4 border-zinc-700 object-cover mx-auto">
+                        <button class="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full border-2 border-black flex items-center justify-center">
+                            <i class="fas fa-edit text-white text-xs"></i>
+                        </button>
+                    </div>
+                    <h1 class="text-2xl font-bold text-white mt-4">김민준</h1>
+                    <p class="text-zinc-400 text-sm mt-1">"단순한 재미를 넘어..."</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar -->
+                <aside class="hidden lg:block w-64 flex-shrink-0">
+                    <div class="sticky top-24 space-y-6">
+                        <div class="text-center">
+                            <div class="relative inline-block">
+                                <img src="./내 프로필 사진/profile.jpg" alt="프로필" class="w-28 h-28 rounded-full border-4 border-zinc-700 mx-auto object-cover">
+                                <button class="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full border-2 border-black flex items-center justify-center hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 shadow-lg">
+                                    <i class="fas fa-edit text-white text-xs"></i>
+                                </button>
+                            </div>
+                            <h1 class="text-2xl font-bold text-white mt-4">김민준</h1>
+                            <p class="text-zinc-400 mt-1 text-sm">"단순한 재미를 넘어..."</p>
+                        </div>
+                        <nav id="side-nav" class="flex flex-col">
+                            <a href="#dashboard" data-tab="dashboard" class="side-nav-link active w-full p-3 rounded-lg text-left">
+                                <span class="flex items-center gap-3"><i class="fa-solid fa-chart-pie w-5 text-center"></i> 대시보드</span>
+                            </a>
+                            <div class="side-nav-heading mt-2">활동 기록</div>
+                            <a href="#activity" data-tab="activity" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400">
+                                <span class="flex items-center justify-between w-full">
+                                    <span><i class="fa-solid fa-pen-nib w-5 text-center mr-3"></i>평가 및 리뷰</span>
+                                    <span class="text-xs font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">498</span>
+                                </span>
+                            </a>
+                            <div class="side-nav-heading mt-2">취향 보관함</div>
+                            <a href="#collections" data-tab="collections" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400">
+                                <span class="flex items-center justify-between w-full">
+                                    <span><i class="fa-solid fa-bookmark w-5 text-center mr-3"></i>저장한 컬렉션</span>
+                                    <span class="text-xs font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">28</span>
+                                </span>
+                            </a>
+                            <a href="#saved-reviews" data-tab="saved-reviews" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400">
+                                <span class="flex items-center justify-between w-full">
+                                    <span><i class="fa-solid fa-pen-to-square w-5 text-center mr-3"></i>저장한 리뷰</span>
+                                    <span class="text-xs font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">18</span>
+                                </span>
+                            </a>
+                            <a href="#watchlist" data-tab="watchlist" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400">
+                                <span class="flex items-center justify-between w-full">
+                                    <span><i class="fa-solid fa-heart w-5 text-center mr-3"></i>보고싶어요</span>
+                                    <span class="text-xs font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">120</span>
+                                </span>
+                            </a>
+                            <a href="#favorites" data-tab="favorites" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400">
+                                <span class="flex items-center justify-between w-full">
+                                    <span><i class="fa-solid fa-user-group w-5 text-center mr-3"></i>선호 인물</span>
+                                    <span class="text-xs font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">42</span>
+                                </span>
+                            </a>
+                            <hr class="border-zinc-800 my-4">
+                            <a href="#settings" data-tab="settings" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400">
+                                <span class="flex items-center gap-3"><i class="fa-solid fa-gear w-5 text-center"></i> 설정</span>
+                            </a>
+                        </nav>
+                    </div>
+                </aside>
+
+                <!-- 모바일 네비게이션 -->
+                <div class="lg:hidden mb-6">
+                    <div class="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-1.5 relative">
+                        <!-- 슬라이딩 인디케이터 -->
+                        <div id="tabIndicator" class="absolute top-1.5 left-1.5 h-[calc(100%-12px)] bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl transition-all duration-300 ease-out" style="width: calc(33.333% - 8px);"></div>
+                        
+                        <!-- 탭 버튼들 -->
+                        <div class="relative grid grid-cols-3 gap-1">
+                            <button data-mobile-tab="dashboard" data-index="0" class="segment-tab active px-4 py-3 text-sm font-semibold text-white relative z-10 transition-colors duration-200">
+                                대시보드
+                            </button>
+                            <button data-mobile-tab="activity" data-index="1" class="segment-tab px-4 py-3 text-sm font-semibold text-zinc-400 relative z-10 transition-colors duration-200">
+                                활동 기록
+                            </button>
+                            <button data-mobile-tab="collections" data-index="2" class="segment-tab px-4 py-3 text-sm font-semibold text-zinc-400 relative z-10 transition-colors duration-200">
+                                보관함
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="flex-1 min-w-0">
+                    <div id="dashboard" class="content-section active space-y-8 lg:space-y-16">
+                        
+                        <!-- 1. Overview (Kept from original) -->
+                        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+                            <div class="section-card p-4 lg:p-6 rounded-2xl relative overflow-hidden">
+                                <i class="fa-solid fa-hourglass-half absolute -right-2 -bottom-2 text-8xl text-white/5"></i>
+                                <h3 class="font-semibold text-zinc-400 text-sm mb-2">총 시청 시간</h3>
+                                <p class="text-4xl font-bold text-purple-400">7,280<span class="text-xl ml-1 text-zinc-500">h</span></p>
+                                <p class="text-xs text-zinc-500 mt-1">상위 5%</p>
+                            </div>
+                            <div class="section-card p-4 lg:p-6 rounded-2xl relative overflow-hidden">
+                                <i class="fa-solid fa-film absolute -right-2 -bottom-2 text-8xl text-white/5"></i>
+                                <h3 class="font-semibold text-zinc-400 text-sm mb-2">평가한 작품</h3>
+                                <p class="text-4xl font-bold text-indigo-400">342<span class="text-xl ml-1 text-zinc-500">편</span></p>
+                            </div>
+                            <div class="section-card p-4 lg:p-6 rounded-2xl relative overflow-hidden">
+                                <i class="fa-solid fa-star absolute -right-2 -bottom-2 text-8xl text-white/5"></i>
+                                <h3 class="font-semibold text-zinc-400 text-sm mb-2">평균 별점</h3>
+                                <p class="text-4xl font-bold text-yellow-400">4.1<span class="text-xl text-zinc-500">/5</span></p>
+                            </div>
+                            <div class="section-card p-4 lg:p-6 rounded-2xl relative overflow-hidden">
+                                <i class="fa-solid fa-pen-nib absolute -right-2 -bottom-2 text-8xl text-white/5"></i>
+                                <h3 class="font-semibold text-zinc-400 text-sm mb-2">작성한 리뷰</h3>
+                                <p class="text-4xl font-bold text-rose-400">156<span class="text-xl ml-1 text-zinc-500">개</span></p>
+                            </div>
+                        </section>
+
+                        <!-- 2. My Persona (with edit) -->
+                        <section class="fade-in" style="animation-delay: 0.2s;">
+                            <div class="gradient-border-card rounded-2xl p-4 lg:p-8 relative">
+                                <button id="edit-persona-btn" class="absolute top-4 right-4 flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition bg-zinc-800/50 hover:bg-zinc-700/50 px-3 py-2 rounded-lg">
+                                    <i class="fas fa-sliders-h text-xs"></i>
+                                    <span>취향 재설정</span>
+                                </button>
+                                <div class="flex flex-col md:flex-row items-center md:items-start gap-8 text-center md:text-left">
+                                    <div class="flex-shrink-0 mx-auto md:mx-0 self-center">
+                                        <i id="persona-icon" class="fa-solid fa-monument text-7xl gradient-text"></i>
+                                    </div>
+                                    <div class="flex-grow">
+                                        <p class="font-semibold text-zinc-400">My Persona</p>
+                                        <h3 id="persona-title" class="text-3xl font-bold text-white mt-1">고뇌하는 철학자</h3>
+                                        <p id="persona-subtitle" class="text-sm text-zinc-400 mt-1"></p>
+                                        <p id="persona-desc" class="text-zinc-300 text-base mt-4 max-w-xl">작품에 담긴 깊이 있는 철학과 미학적 성취를 탐험합니다. 대중적인 서사보다는 감독의 실험적인 미학이나, 추상적 개념을 다루는 비선형 서사에 매료됩니다.</p>
+                                        <div id="persona-tags" class="flex flex-wrap justify-center md:justify-start gap-2 mt-5">
+                                            <span class="bg-purple-500/20 text-purple-300 text-xs font-semibold px-3 py-1 rounded-full">#생각할_거리</span>
+                                            <span class="bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-3 py-1 rounded-full">#다크_앤_그리티</span>
+                                            <span class="bg-zinc-500/20 text-zinc-300 text-xs font-semibold px-3 py-1 rounded-full">#1990년대_명작</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- My Universe -->
+                        <section class="fade-in" style="animation-delay: 0.4s;">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="gradient-border-card rounded-2xl p-6 shadow-lg"><h3 class="text-xl font-bold text-white mb-4 text-center">선호 장르</h3><div class="mt-8 h-80"><canvas id="genreChart"></canvas></div></div>
+                                <div class="gradient-border-card rounded-2xl p-6 shadow-lg">
+                                    <h3 class="text-xl font-bold text-white mb-4 text-center">나의 취향 DNA (Top 6)</h3>
+                                    <div class="space-y-4 pt-2">
+                                        <div class="p-3 rounded-lg bg-zinc-900">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-3">
+                                                    <i class="fas fa-robot text-purple-400 text-lg"></i>
+                                                    <span class="font-semibold text-white">심리 스릴러 <span class="text-xs text-purple-300">(스릴러)</span></span>
+                                                    <div class="tooltip-container">
+                                                        <i class="fas fa-info-circle tooltip-icon text-purple-400 text-xs"></i>
+                                                        <div class="tooltip">인물의 심리 상태와 내적 갈등을 중심으로 한 긴장감 있는 스릴러</div>
+                                                    </div>
+                                                </div>
+                                                <span class="font-bold text-purple-400">95%</span>
+                                            </div>
+                                            <div class="w-full bg-zinc-700 rounded-full h-1.5 mt-1"><div class="bg-purple-400 h-1.5 rounded-full" style="width: 95%"></div></div>
+                                        </div>
+                                        <div class="p-3 rounded-lg bg-zinc-900">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-3">
+                                                    <i class="fas fa-brain text-violet-400 text-lg"></i>
+                                                    <span class="font-semibold text-white">인간 드라마 <span class="text-xs text-violet-300">(드라마)</span></span>
+                                                    <div class="tooltip-container">
+                                                        <i class="fas fa-info-circle tooltip-icon text-violet-400 text-xs"></i>
+                                                        <div class="tooltip">인간의 내면과 관계를 깊이 있게 다루는 드라마</div>
+                                                    </div>
+                                                </div>
+                                                <span class="font-bold text-violet-400">88%</span>
+                                            </div>
+                                            <div class="w-full bg-zinc-700 rounded-full h-1.5 mt-1"><div class="bg-violet-400 h-1.5 rounded-full" style="width: 88%"></div></div>
+                                        </div>
+                                        <div class="p-3 rounded-lg bg-zinc-900">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-3">
+                                                    <i class="fas fa-user-secret text-slate-400 text-lg"></i>
+                                                    <span class="font-semibold text-white">아트하우스 <span class="text-xs text-slate-300">(드라마)</span></span>
+                                                    <div class="tooltip-container">
+                                                        <i class="fas fa-info-circle tooltip-icon text-slate-400 text-xs"></i>
+                                                        <div class="tooltip">예술적 가치와 실험적 표현을 중시하는 독립영화</div>
+                                                    </div>
+                                                </div>
+                                                <span class="font-bold text-slate-400">85%</span>
+                                            </div>
+                                            <div class="w-full bg-zinc-700 rounded-full h-1.5 mt-1"><div class="bg-slate-400 h-1.5 rounded-full" style="width: 85%"></div></div>
+                                        </div>
+                                        <div class="p-3 rounded-lg bg-zinc-900">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-3">
+                                                    <i class="fas fa-biohazard text-zinc-400 text-lg"></i>
+                                                    <span class="font-semibold text-white">네오-느와르 <span class="text-xs text-zinc-300">(느와르)</span></span>
+                                                    <div class="tooltip-container">
+                                                        <i class="fas fa-info-circle tooltip-icon text-zinc-400 text-xs"></i>
+                                                        <div class="tooltip">현대적 느와르 영화의 특징을 가진 어둡고 시니컬한 스타일</div>
+                                                    </div>
+                                                </div>
+                                                <span class="font-bold text-zinc-400">75%</span>
+                                            </div>
+                                            <div class="w-full bg-zinc-700 rounded-full h-1.5 mt-1"><div class="bg-zinc-400 h-1.5 rounded-full" style="width: 75%"></div></div>
+                                        </div>
+                                        <div class="p-3 rounded-lg bg-zinc-900">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-3">
+                                                    <i class="fas fa-palette text-zinc-500 text-lg"></i>
+                                                    <span class="font-semibold text-white">사이버펑크 <span class="text-xs text-zinc-400">(SF)</span></span>
+                                                    <div class="tooltip-container">
+                                                        <i class="fas fa-info-circle tooltip-icon text-zinc-500 text-xs"></i>
+                                                        <div class="tooltip">미래적 기술과 디스토피아적 사회를 배경으로 한 SF 장르</div>
+                                                    </div>
+                                                </div>
+                                                <span class="font-bold text-zinc-500">65%</span>
+                                            </div>
+                                            <div class="w-full bg-zinc-700 rounded-full h-1.5 mt-1"><div class="bg-zinc-500 h-1.5 rounded-full" style="width: 65%"></div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- My Spectrum -->
+                        <section class="fade-in" style="animation-delay: 0.6s;">
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div class="lg:col-span-1 gradient-border-card rounded-2xl p-6 shadow-lg flex flex-col justify-center text-center">
+                                    <h3 class="text-xl font-bold text-white mb-3">취향 스펙트럼</h3>
+                                    <p class="text-4xl font-bold gradient-text">실험주의자</p>
+                                    <p class="text-zinc-400 mt-1">감독의 독창성과 영상미를 선호</p>
+                                    <div class="w-full mt-4 aspect-square max-w-48 mx-auto">
+                                        <div class="spectrum-map bg-zinc-900/50 rounded-lg h-full w-full relative p-6">
+                                <div class="spectrum-axis h-full w-px top-0 left-1/2 -ml-px"></div><div class="spectrum-axis w-full h-px top-1/2 -mt-px left-0"></div>
+                                            <span class="absolute top-2 left-1/2 -translate-x-1/2 text-sm text-zinc-400">미학</span><span class="absolute bottom-2 left-1/2 -translate-x-1/2 text-sm text-zinc-400">서사</span>
+                                            <span class="absolute top-1/2 -translate-y-1/2 left-2 text-sm text-zinc-400 -rotate-90">실험성</span><span class="absolute top-1/2 -translate-y-1/2 right-2 text-sm text-zinc-400 -rotate-90">대중성</span>
+                                            <div class="spectrum-dot bg-purple-400 w-5 h-5 rounded-full border-2 border-zinc-900 shadow-lg" style="top: 30%; left: 35%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div class="gradient-border-card rounded-2xl p-6 shadow-lg flex flex-col justify-center text-center">
+                                        <h3 class="text-xl font-bold text-white mb-3">개봉년도 선호도</h3>
+                                        <p class="text-4xl font-bold gradient-text">2010s</p>
+                                        <p class="text-zinc-400 mt-1">최신작을 가장 선호</p>
+                                        <div class="w-full mt-4 aspect-square max-w-48 mx-auto"><canvas id="releaseYearChart"></canvas></div>
+                                    </div>
+                                    <div class="gradient-border-card rounded-2xl p-6 shadow-lg flex flex-col justify-center text-center">
+                                        <h3 class="text-xl font-bold text-white mb-3">국가별 선호도</h3>
+                                        <p class="text-4xl font-bold gradient-text">미국</p>
+                                        <p class="text-zinc-400 mt-1">북미권 콘텐츠 중심</p>
+                                        <div class="w-full mt-4 aspect-square max-w-48 mx-auto"><canvas id="countryChart"></canvas></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- My Critique -->
+                        <section class="fade-in" style="animation-delay: 0.8s;">
+                            <div class="gradient-border-card rounded-2xl p-6">
+                                <h3 class="text-xl font-bold text-white mb-4 text-center">평가 성향: <span class="gradient-text font-semibold">'확신형' 평가자</span></h3>
+                                <div class="h-80"><canvas id="ratingChart"></canvas></div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Other content sections -->
+                    <div id="activity" class="content-section space-y-8 lg:space-y-16">
+                        <h2 class="text-3xl font-bold text-white mb-8">평가 및 리뷰</h2>
+                        
+                        <!-- 평가 통계 -->
+                        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="section-card p-4 lg:p-6 rounded-2xl">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-white">총 평가</h3>
+                                    <i class="fas fa-star text-yellow-400 text-xl"></i>
+                                </div>
+                                <p class="text-3xl font-bold gradient-text">342편</p>
+                                <p class="text-sm text-zinc-400 mt-1">이번 달 12편 추가</p>
+                            </div>
+                            <div class="section-card p-4 lg:p-6 rounded-2xl">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-white">평균 별점</h3>
+                                    <i class="fas fa-chart-line text-purple-400 text-xl"></i>
+                                </div>
+                                <p class="text-3xl font-bold gradient-text">4.1/5</p>
+                                <p class="text-sm text-zinc-400 mt-1">커뮤니티 평균 3.8</p>
+                            </div>
+                            <div class="section-card p-4 lg:p-6 rounded-2xl">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-white">작성한 리뷰</h3>
+                                    <i class="fas fa-pen-nib text-indigo-400 text-xl"></i>
+                                </div>
+                                <p class="text-3xl font-bold gradient-text">156개</p>
+                                <p class="text-sm text-zinc-400 mt-1">이번 주 3개 작성</p>
+                            </div>
+                        </section>
+
+                        <!-- 평가 성향 차트 -->
+                        <section>
+                            <h3 class="text-xl font-bold text-white mb-6">평가 성향: '확신형' 평가자</h3>
+                            <div class="gradient-border-card rounded-2xl p-6">
+                                <div class="h-80">
+                                    <canvas id="ratingChartActivity"></canvas>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- 최근 평가한 작품 -->
+                        <section>
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-bold text-white">최근 평가한 작품</h3>
+                                <button class="text-purple-400 hover:text-purple-300 text-sm font-medium">더보기</button>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-film text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-film text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-film text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-film text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-film text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-film text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div id="collections" class="content-section space-y-8 lg:space-y-16">
+                        <h2 class="text-3xl font-bold text-white mb-8">저장한 컬렉션</h2>
+                        
+                        <!-- 컬렉션 통계 -->
+                        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="section-card p-4 lg:p-6 rounded-2xl">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-white">총 컬렉션</h3>
+                                    <i class="fas fa-bookmark text-purple-400 text-xl"></i>
+                                </div>
+                                <p class="text-3xl font-bold gradient-text">28개</p>
+                                <p class="text-sm text-zinc-400 mt-1">이번 달 3개 추가</p>
+                            </div>
+                            <div class="section-card p-4 lg:p-6 rounded-2xl">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-white">저장한 리뷰</h3>
+                                    <i class="fas fa-pen-to-square text-indigo-400 text-xl"></i>
+                                </div>
+                                <p class="text-3xl font-bold gradient-text">18개</p>
+                                <p class="text-sm text-zinc-400 mt-1">최근 1개 저장</p>
+                            </div>
+                            <div class="section-card p-4 lg:p-6 rounded-2xl">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-white">보고싶어요</h3>
+                                    <i class="fas fa-heart text-rose-400 text-xl"></i>
+                                </div>
+                                <p class="text-3xl font-bold gradient-text">120개</p>
+                                <p class="text-sm text-zinc-400 mt-1">이번 주 5개 추가</p>
+                            </div>
+                        </section>
+
+                        <!-- 컬렉션 목록 -->
+                        <section>
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-bold text-white">내 컬렉션</h3>
+                                <button class="text-purple-400 hover:text-purple-300 text-sm font-medium">+ 새 컬렉션</button>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div class="section-card rounded-2xl p-6 hover:bg-zinc-800/50 transition cursor-pointer">
+                                    <div class="flex items-center gap-4 mb-4">
+                                        <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
+                                            <i class="fas fa-film text-white text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-white">명작 스릴러 모음</h4>
+                                            <p class="text-sm text-zinc-400">28개 작품</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-zinc-300">심리적 긴장감이 돋보이는 스릴러 작품들을 모았습니다.</p>
+                                </div>
+                                <div class="section-card rounded-2xl p-6 hover:bg-zinc-800/50 transition cursor-pointer">
+                                    <div class="flex items-center gap-4 mb-4">
+                                        <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center">
+                                            <i class="fas fa-heart text-white text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-white">주말에 볼 영화</h4>
+                                            <p class="text-sm text-zinc-400">15개 작품</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-zinc-300">편안한 주말에 감상하기 좋은 영화들입니다.</p>
+                                </div>
+                                <div class="section-card rounded-2xl p-6 hover:bg-zinc-800/50 transition cursor-pointer">
+                                    <div class="flex items-center gap-4 mb-4">
+                                        <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                                            <i class="fas fa-star text-white text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-white">내가 좋아하는 영화</h4>
+                                            <p class="text-sm text-zinc-400">42개 작품</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-zinc-300">개인적으로 가장 좋아하는 영화들의 모음입니다.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- 보고싶어요 목록 -->
+                        <section>
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-bold text-white">보고싶어요</h3>
+                                <button class="text-purple-400 hover:text-purple-300 text-sm font-medium">더보기</button>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-play text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-play text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-play text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-play text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-play text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="aspect-[2/3] rounded-lg bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer">
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-play text-zinc-600 text-2xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- 선호 인물 -->
+                        <section>
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-bold text-white">선호 인물</h3>
+                                <button class="text-purple-400 hover:text-purple-300 text-sm font-medium">더보기</button>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                <div class="text-center">
+                                    <div class="w-16 h-16 rounded-full bg-zinc-800 mx-auto mb-3 flex items-center justify-center">
+                                        <i class="fas fa-user text-zinc-600 text-xl"></i>
+                                    </div>
+                                    <p class="text-sm text-zinc-400">감독</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="w-16 h-16 rounded-full bg-zinc-800 mx-auto mb-3 flex items-center justify-center">
+                                        <i class="fas fa-user text-zinc-600 text-xl"></i>
+                                    </div>
+                                    <p class="text-sm text-zinc-400">배우</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="w-16 h-16 rounded-full bg-zinc-800 mx-auto mb-3 flex items-center justify-center">
+                                        <i class="fas fa-user text-zinc-600 text-xl"></i>
+                                    </div>
+                                    <p class="text-sm text-zinc-400">작가</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="w-16 h-16 rounded-full bg-zinc-800 mx-auto mb-3 flex items-center justify-center">
+                                        <i class="fas fa-user text-zinc-600 text-xl"></i>
+                                    </div>
+                                    <p class="text-sm text-zinc-400">음악가</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="w-16 h-16 rounded-full bg-zinc-800 mx-auto mb-3 flex items-center justify-center">
+                                        <i class="fas fa-user text-zinc-600 text-xl"></i>
+                                    </div>
+                                    <p class="text-sm text-zinc-400">제작자</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="w-16 h-16 rounded-full bg-zinc-800 mx-auto mb-3 flex items-center justify-center">
+                                        <i class="fas fa-user text-zinc-600 text-xl"></i>
+                                    </div>
+                                    <p class="text-sm text-zinc-400">기타</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div id="saved-reviews" class="content-section"><h2 class="text-3xl font-bold text-white mb-8">저장한 리뷰</h2></div>
+                    <div id="watchlist" class="content-section"><h2 class="text-3xl font-bold text-white mb-8">보고싶어요</h2></div>
+                    <div id="favorites" class="content-section"><h2 class="text-3xl font-bold text-white mb-8">선호 인물</h2></div>
+                    <div id="settings" class="content-section"><h2 class="text-3xl font-bold text-white mb-8">설정</h2></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 취향 재설정 Modal (Full from reference) -->
+    <div id="persona-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="persona-modal-title">
+        <div class="modal-content">
+            <div id="modal-header">
+                <h2 id="persona-modal-title" class="text-2xl font-bold text-white text-center mb-2">나의 취향 리포트 & 미세조정</h2>
+                <p class="text-zinc-400 text-center text-sm mb-6">활동 데이터를 기반으로 당신의 취향을 분석하고 더 자세히 알려주세요!</p>
+            </div>
+            <!-- Step 1: Report -->
+            <div id="step-1" class="modal-step active">
+                <label class="block text-lg font-semibold text-zinc-300 mb-4"><span class="gradient-text font-bold">Step 1.</span> 당신의 취향 리포트</label>
+                <div id="taste-report-container" class="bg-zinc-800/50 p-6 rounded-lg space-y-6"></div>
+                <div class="mt-8 flex justify-end"><button data-next="2" class="next-btn bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition text-base">자세히 알려주기</button></div>
+            </div>
+            <!-- Step 2: Genre Questions -->
+            <div id="step-2" class="modal-step">
+                <label class="block text-lg font-semibold text-zinc-300 mb-4"><span class="gradient-text font-bold">Step 2.</span> 장르별 선호/회피 요소 선택</label>
+                <div id="genre-questions" class="space-y-8"></div>
+                <div class="mt-8 flex justify-between"><button data-back="1" class="back-btn bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-2 px-6 rounded-lg transition text-base">이전</button><button data-next="3" class="next-btn bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition text-base">다음</button></div>
+            </div>
+            <!-- Step 3: Keywords -->
+            <div id="step-3" class="modal-step">
+                <label class="block text-lg font-semibold text-zinc-300 mb-4"><span class="gradient-text font-bold">Step 3.</span> 취향 키워드 선택</label>
+                <div id="keyword-container" class="space-y-6"></div>
+                <div class="mt-8 flex justify-between"><button data-back="2" class="back-btn bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-2 px-6 rounded-lg transition text-base">이전</button><button data-next="4" class="next-btn bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition text-base">다음</button></div>
+            </div>
+            <!-- Step 4: Style Questions -->
+            <div id="step-4" class="modal-step">
+                <label class="block text-lg font-semibold text-zinc-300 mb-4"><span class="gradient-text font-bold">Step 4.</span> 감상 스타일 진단</label>
+                <div id="style-questions" class="space-y-8">
+                    <div data-question="discovery"><p class="text-base font-semibold text-zinc-300 mb-3">Q1 (탐색 동기). 주로 어떻게 작품을 발견하시나요?</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><button data-value="social" class="choice-button text-left bg-zinc-800 p-4 rounded-lg hover:bg-zinc-700"><div class="flex items-center gap-4"><i class="fa-solid fa-users text-2xl w-8 text-center text-zinc-400"></i><div><span class="font-semibold block text-white">타인 추천/평점</span><span class="text-xs text-zinc-400">주변의 추천이나 높은 평점을 신뢰</span></div></div></button><button data-value="individual" class="choice-button text-left bg-zinc-800 p-4 rounded-lg hover:bg-zinc-700"><div class="flex items-center gap-4"><i class="fa-solid fa-compass text-2xl w-8 text-center text-zinc-400"></i><div><span class="font-semibold block text-white">자기 리스트/감독</span><span class="text-xs text-zinc-400">나만의 목록, 감독 작품 탐색</span></div></div></button></div></div>
+                    <div data-question="interpretation"><p class="text-base font-semibold text-zinc-300 mb-3">Q2 (해석 방식). 어떤 종류의 분석에 더 끌리나요?</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><button data-value="concrete" class="choice-button text-left bg-zinc-800 p-4 rounded-lg hover:bg-zinc-700"><div class="flex items-center gap-4"><i class="fa-solid fa-magnifying-glass-chart text-2xl w-8 text-center text-zinc-400"></i><div><span class="font-semibold block text-white">텍스트 중심 분석</span><span class="text-xs text-zinc-400">줄거리, 연기, 논리 등 명확한 요소</span></div></div></button><button data-value="abstract" class="choice-button text-left bg-zinc-800 p-4 rounded-lg hover:bg-zinc-700"><div class="flex items-center gap-4"><i class="fa-solid fa-feather text-2xl w-8 text-center text-zinc-400"></i><div><span class="font-semibold block text-white">서브텍스트 중심 해석</span><span class="text-xs text-zinc-400">상징, 메타포, 사회적 맥락 등</span></div></div></button></div></div>
+                    <div data-question="satisfaction"><p class="text-base font-semibold text-zinc-300 mb-3">Q3 (보상 포인트). 감상 후 가장 큰 쾌감은 무엇인가요?</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><button data-value="logical" class="choice-button text-left bg-zinc-800 p-4 rounded-lg hover:bg-zinc-700"><div class="flex items-center gap-4"><i class="fa-solid fa-sitemap text-2xl w-8 text-center text-zinc-400"></i><div><span class="font-semibold block text-white">구조적 쾌감</span><span class="text-xs text-zinc-400">복선 회수, 퍼즐 해결, 완벽한 플롯</span></div></div></button><button data-value="emotional" class="choice-button text-left bg-zinc-800 p-4 rounded-lg hover:bg-zinc-700"><div class="flex items-center gap-4"><i class="fa-solid fa-hand-holding-heart text-2xl w-8 text-center text-zinc-400"></i><div><span class="font-semibold block text-white">정서적 공명</span><span class="text-xs text-zinc-400">인물 공감, 카타르시스, 깊은 여운</span></div></div></button></div></div>
+                </div>
+                <div class="mt-8 flex justify-between items-center"><button data-back="3" class="back-btn bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-2 px-6 rounded-lg transition text-base">이전</button><button data-next="5" class="next-btn bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition text-base">다음</button></div>
+            </div>
+            <!-- Step 5: MBTI -->
+            <div id="step-5" class="modal-step">
+                <label class="block text-lg font-semibold text-zinc-300 mb-4"><span class="gradient-text font-bold">Step 5.</span> MBTI (선택)</label>
+                <p class="text-zinc-400 text-sm mb-6 text-center">페르소나 분석의 참고 지표로만 활용됩니다.</p>
+                <div id="mbti-selector" class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3" data-mbti-group="ei"><button class="choice-button bg-zinc-800 text-zinc-300 py-3 rounded-lg hover:bg-zinc-700 font-semibold" data-value="E">E (외향)</button><button class="choice-button bg-zinc-800 text-zinc-300 py-3 rounded-lg hover:bg-zinc-700 font-semibold" data-value="I">I (내향)</button></div>
+                    <div class="grid grid-cols-2 gap-3" data-mbti-group="sn"><button class="choice-button bg-zinc-800 text-zinc-300 py-3 rounded-lg hover:bg-zinc-700 font-semibold" data-value="S">S (감각)</button><button class="choice-button bg-zinc-800 text-zinc-300 py-3 rounded-lg hover:bg-zinc-700 font-semibold" data-value="N">N (직관)</button></div>
+                    <div class="grid grid-cols-2 gap-3" data-mbti-group="tf"><button class="choice-button bg-zinc-800 text-zinc-300 py-3 rounded-lg hover:bg-zinc-700 font-semibold" data-value="T">T (사고)</button><button class="choice-button bg-zinc-800 text-zinc-300 py-3 rounded-lg hover:bg-zinc-700 font-semibold" data-value="F">F (감정)</button></div>
+                    <div class="grid grid-cols-2 gap-3" data-mbti-group="jp"><button class="choice-button bg-zinc-800 text-zinc-300 py-3 rounded-lg hover:bg-zinc-700 font-semibold" data-value="J">J (판단)</button><button class="choice-button bg-zinc-800 text-zinc-300 py-3 rounded-lg hover:bg-zinc-700 font-semibold" data-value="P">P (인식)</button></div>
+                </div>
+                <div class="mt-8 flex justify-between items-center"><button data-back="4" class="back-btn bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-2 px-6 rounded-lg transition text-base">이전</button><button id="generate-persona-btn" class="w-auto text-center bg-gradient-to-r from-purple-500 to-indigo-500 hover:opacity-90 text-white font-bold py-3 px-8 rounded-lg transition text-base">내 페르소나 확인하기</button></div>
+            </div>
+            <!-- Result -->
+            <div id="step-result" class="modal-step text-center">
+                <i id="result-icon" class="mb-4 text-7xl gradient-text"></i>
+                <h3 id="result-title" class="text-3xl font-bold text-white"></h3>
+                <p id="result-subtitle" class="text-sm text-zinc-400 mt-1"></p>
+                <p id="result-desc" class="text-zinc-300 mt-4 max-w-md mx-auto"></p>
+                <div class="text-left mt-6 bg-zinc-800/50 p-4 rounded-lg">
+                    <h4 class="text-sm font-semibold text-zinc-400 mb-3">판단 근거 (신뢰도: <span id="result-confidence" class="font-bold"></span>)</h4>
+                    <div id="result-evidence" class="space-y-3"></div>
+                </div>
+                <div class="mt-8 flex flex-col sm:flex-row gap-3"><button id="save-persona-btn" class="w-full text-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition">이 페르소나로 설정</button><button id="keep-previous-btn" class="w-full text-center bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-3 px-4 rounded-lg transition">이전 페르소나 유지하기</button></div>
+                <p class="text-xs text-zinc-600 mt-4">새 리뷰·별점·완주율 변화가 일정 임계값을 넘으면 자동 갱신됩니다.</p>
+            </div>
+            <button id="persona-x" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition" aria-label="close modal"><i class="fas fa-times text-xl"></i></button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = {
+                chartsRendered: false,
+                init() {
+                    this.elements = {
+                        sideNav: document.getElementById('side-nav'),
+                        contentSections: document.querySelectorAll('.content-section'),
+                        tabLinks: document.querySelectorAll('a[data-tab]'),
+                    };
+                    this.addEventListeners();
+                    this.switchTab('dashboard');
+                    // Persona modal wiring (full)
+                    this.persona = {
+                        modal: document.getElementById('persona-modal'),
+                        openBtn: document.getElementById('edit-persona-btn'),
+                        closeX: document.getElementById('persona-x'),
+                        nextBtns: document.querySelectorAll('.next-btn'),
+                        backBtns: document.querySelectorAll('.back-btn'),
+                        generateBtn: document.getElementById('generate-persona-btn'),
+                        saveBtn: document.getElementById('save-persona-btn'),
+                        keepBtn: document.getElementById('keep-previous-btn'),
+                        modalHeader: document.getElementById('modal-header'),
+                        steps: document.querySelectorAll('.modal-step'),
+                        genreQuestionsContainer: document.getElementById('genre-questions'),
+                        keywordContainer: document.getElementById('keyword-container'),
+                        styleQuestionsContainer: document.getElementById('style-questions'),
+                        mbtiSelector: document.getElementById('mbti-selector'),
+                        tasteReportContainer: document.getElementById('taste-report-container'),
+                        result: {
+                            icon: document.getElementById('result-icon'),
+                            title: document.getElementById('result-title'),
+                            subtitle: document.getElementById('result-subtitle'),
+                            desc: document.getElementById('result-desc'),
+                            confidence: document.getElementById('result-confidence'),
+                            evidence: document.getElementById('result-evidence')
+                        },
+                        // persona targets to update (keep icon position)
+                        iconEl: document.getElementById('persona-icon'),
+                        titleEl: document.getElementById('persona-title'),
+                        subtitleEl: document.getElementById('persona-subtitle'),
+                        descEl: document.getElementById('persona-desc'),
+                        tagsEl: document.getElementById('persona-tags'),
+                        currentPersonaData: {},
+                    };
+                    this.bindPersonaEvents();
+                },
+                bindPersonaEvents() {
+                    const P = this.persona;
+                    if (!P.openBtn) return;
+                    // open/close
+                    P.openBtn.addEventListener('click', () => { P.modal.style.display = 'flex'; document.documentElement.style.overflow = 'hidden'; this.populateTasteReport(); this.populateGenreQuestions(); this.populateKeywords(); this.navigateModal('1'); });
+                    P.closeX?.addEventListener('click', () => { P.modal.style.display = 'none'; document.documentElement.style.overflow = ''; });
+                    P.keepBtn?.addEventListener('click', () => { P.modal.style.display = 'none'; document.documentElement.style.overflow = ''; });
+                    P.modal.addEventListener('click', (e) => { if (e.target === P.modal) { P.modal.style.display = 'none'; document.documentElement.style.overflow = ''; } });
+                    // step nav
+                    P.nextBtns.forEach(btn => btn.addEventListener('click', (e) => this.navigateModal(e.target.dataset.next)));
+                    P.backBtns.forEach(btn => btn.addEventListener('click', (e) => this.navigateModal(e.target.dataset.back)));
+                    // interactions
+                    P.styleQuestionsContainer.addEventListener('click', (e) => { const btn = e.target.closest('.choice-button'); if (!btn) return; [...btn.parentElement.children].forEach(ch => ch.classList.remove('active')); btn.classList.add('active'); });
+                    P.mbtiSelector.addEventListener('click', (e) => { const btn = e.target.closest('.choice-button'); if (!btn) return; [...btn.parentElement.children].forEach(ch => ch.classList.remove('active')); btn.classList.add('active'); });
+                    P.genreQuestionsContainer.addEventListener('click', (e) => { const tag = e.target.closest('.keyword-tag'); if (!tag) return; tag.classList.toggle('active'); });
+                    P.keywordContainer.addEventListener('click', (e) => { const tag = e.target.closest('.keyword-tag'); if (!tag) return; const group = tag.dataset.group; const limit = parseInt(tag.dataset.limit,10); const active = P.keywordContainer.querySelectorAll(`.keyword-tag[data-group="${group}"].active`); if (tag.classList.contains('active')) tag.classList.remove('active'); else { if (active.length < limit) { if (limit===1) active.forEach(t=>t.classList.remove('active')); tag.classList.add('active'); } } });
+                    // generate persona
+                    P.generateBtn?.addEventListener('click', () => { const answers = this.collectPersonaAnswers(); const data = this.getPersonaData(answers); this.persona.currentPersonaData = data; this.displayPersonaResult(data); this.navigateModal('result'); });
+                    // apply persona to card (keep icon position)
+                    P.saveBtn?.addEventListener('click', () => { const data = this.persona.currentPersonaData || {}; if (!data.title) return; P.iconEl.className = `${data.icon} text-7xl gradient-text`; P.titleEl.textContent = data.title; P.subtitleEl.textContent = data.subtitle; P.descEl.textContent = data.description; P.tagsEl.innerHTML = ''; (data.evidence||[]).filter(i=>i.type==='prefer').slice(0,3).forEach(item => { const chip=document.createElement('span'); chip.className='bg-purple-500/20 text-purple-300 text-xs font-semibold px-3 py-1 rounded-full'; chip.textContent=item.label.replace('참고: ',''); P.tagsEl.appendChild(chip); }); P.modal.style.display='none'; document.documentElement.style.overflow=''; });
+                },
+                navigateModal(step) {
+                    const P = this.persona;
+                    P.steps.forEach(s => s.classList.remove('active'));
+                    if (step === 'result') {
+                        const res = document.getElementById('step-result');
+                        if (res) res.classList.add('active');
+                        P.modalHeader.style.display = 'none';
+                        return;
+                    }
+                    const next = document.getElementById(`step-${step}`);
+                    if (next) next.classList.add('active');
+                    P.modalHeader.style.display = 'block';
+                },
+                populateTasteReport() {
+                    const P = this.persona; const container = P.tasteReportContainer; container.innerHTML=''; const data={ '스릴러':{ proportion:38, rating:4.6, completion:92, label:'강한 선호로 추정', labelColor:'text-green-400' }, '드라마':{ proportion:25, rating:3.5, completion:62, label:'소비 대비 낮은 만족', labelColor:'text-yellow-400' } }; ['스릴러','드라마'].forEach((g,i)=>{ const d=data[g]; if(!d) return; container.innerHTML += `<div><div class="flex justify-between items-center"><h4 class="text-lg font-bold text-white">${g}</h4><span class="text-sm font-semibold ${d.labelColor}">${d.label}</span></div><p class="text-xs text-zinc-400 mt-1">시청 비중 ${d.proportion}% · 평균 별점 ${d.rating} · 완주율 ${d.completion}%</p></div>${i===0?'<hr class="border-zinc-700">':''}`; });
+                },
+                populateGenreQuestions() {
+                    const P=this.persona; const container=P.genreQuestionsContainer; container.innerHTML=''; const bank={ '스릴러':{ axes:{ '표현 (중복 가능)':{ type:'multi', choices:{ 'puzzle':'퍼즐/복선 회수','tension':'지속적 긴장감','fast-pacing':'빠른 전개와 편집','tense-scenes':'긴장감 넘치는 명장면','noir-tone':'느와르 톤/차가운 분위기','realism':'리얼리즘 기반 연출' } }, '주제 (중복 가능)':{ type:'multi', choices:{ 'hidden-truth':'숨겨진 진실','crime-psych':'범죄/심리','morality':'도덕·책임','conspiracy':'음모·권력 구조','survival':'생존/본능','revenge':'복수/집착' } }, '회피 (중복 가능)':{ type:'avoid', choices:{ 'deus-ex':'편의적 반전','loose-logic':'개연성 약함','twist-for-twist':'반전을 위한 반전','gore':'과도한 고어','jump-scare-spam':'점프스케어 남발','cliche':'진부한 클리셰' } } } }, '드라마':{ axes:{ '표현 (중복 가능)':{ type:'multi', choices:{ 'realism':'리얼리즘','mise-en-scene':'정교한 미장센','experimental-edit':'실험적 편집' } }, '주제 (중복 가능)':{ type:'multi', choices:{ 'family':'가족·관계','social-critique':'사회적 비평','historical':'시대상(역사)' } }, '회피 (중복 가능)':{ type:'avoid', choices:{ 'cliche':'진부한 전개','sermon':'설교적 메시지','sentimental':'과도한 감상주의' } } } } };
+                    Object.entries(bank).forEach(([genre, gdata])=>{ const block=document.createElement('div'); block.className='bg-zinc-800/50 p-5 rounded-lg'; let html=`<h4 class="text-lg font-bold text-white mb-4">${genre}</h4>`; Object.entries(gdata.axes).forEach(([axisTitle, axis])=>{ html+=`<p class="text-sm font-semibold text-zinc-400 mb-2 mt-4">${axisTitle}</p><div class="flex flex-wrap gap-2" data-genre="${genre}" data-axis="${axisTitle}">`; Object.entries(axis.choices).forEach(([value,label])=>{ const tagClass= axis.type==='avoid' ? 'keyword-tag avoid' : 'keyword-tag bg-zinc-700 text-zinc-300'; html+=`<span class="${tagClass} px-3 py-1.5 rounded-full" data-value="${value}">${label}</span>`; }); html+='</div>'; }); block.innerHTML=html; container.appendChild(block); });
+                },
+                populateKeywords() {
+                    const P=this.persona; const container=P.keywordContainer; container.innerHTML=''; const bank={ '정서 (1개 선택)':{ type:'single', limit:1, keywords:['#잔잔한몰입','#차가운긴장','#따뜻한카타르시스','#유쾌한웃음'] }, '형식 (최대 1개)':{ type:'multi', limit:1, keywords:['#정교한미장센','#실험적편집','#리얼리즘','#빠른 전개와 편집','#긴장감 넘치는 명장면'] }, '서사 (최대 1개)':{ type:'multi', limit:1, keywords:['#정교한복선','#해석의여지','#사회적비평'] }, '회피 (선택 1개)':{ type:'avoid', limit:1, keywords:['#감상주의혐오','#설교조서사싫음','#뜬구름서사싫음'] } };
+                    Object.entries(bank).forEach(([title, cfg])=>{ const section=document.createElement('div'); section.innerHTML = `<p class="text-base font-semibold text-zinc-300 mb-3">${title}</p>`; const wrap=document.createElement('div'); wrap.className='flex flex-wrap gap-3'; cfg.keywords.forEach(k=>{ const tag=document.createElement('span'); tag.className=`keyword-tag text-base font-medium px-4 py-2 rounded-full ${cfg.type==='avoid'?'avoid':'bg-zinc-800 text-zinc-300'}`; tag.textContent=k; tag.dataset.group=title; tag.dataset.limit=cfg.limit; wrap.appendChild(tag); }); section.appendChild(wrap); container.appendChild(section); });
+                },
+                collectPersonaAnswers() {
+                    const P=this.persona; const answers={ genres:{}, keywords:{ prefer:[], avoid:[] }, style:{}, mbti:'' };
+                    P.genreQuestionsContainer.querySelectorAll('[data-genre]').forEach(group=>{ const genre=group.dataset.genre; if(!answers.genres[genre]) answers.genres[genre]={ prefer:[], avoid:[] }; group.querySelectorAll('.keyword-tag.active').forEach(tag=>{ (tag.classList.contains('avoid')?answers.genres[genre].avoid:answers.genres[genre].prefer).push(tag.textContent); }); });
+                    P.keywordContainer.querySelectorAll('.keyword-tag.active').forEach(tag=>{ (tag.classList.contains('avoid')?answers.keywords.avoid:answers.keywords.prefer).push(tag.textContent); });
+                    P.styleQuestionsContainer.querySelectorAll('[data-question]').forEach(group=>{ const active=group.querySelector('.active'); answers.style[group.dataset.question]= active ? active.dataset.value : null; });
+                    P.mbtiSelector.querySelectorAll('[data-mbti-group]').forEach(group=>{ const active=group.querySelector('.active'); if(active) answers.mbti += active.dataset.value; });
+                    return answers;
+                },
+                computeGenreScores({ userTopGenres = ['스릴러','드라마'], genres, keywords, style }) {
+                    const baseRankWeights = { 0: 3, 1: 2, 2: 1 };
+                    const scores = { '스릴러': 0, '드라마': 0, '아트하우스': 0, '미스터리': 0, '느와르': 0 };
+                    userTopGenres.forEach((g, idx) => { if (scores[g] != null) scores[g] += (baseRankWeights[idx] || 0); });
+                    Object.entries(genres || {}).forEach(([g, v]) => { if (!(g in scores)) scores[g] = 0; (v.prefer || []).forEach(() => (scores[g] += 1)); (v.avoid || []).forEach(() => (scores[g] -= 1.5)); });
+                    const keywordToGenres = { '#정교한미장센':['드라마','아트하우스'], '#실험적편집':['아트하우스'], '#리얼리즘':['드라마','느와르'], '#정교한복선':['스릴러','미스터리'], '#해석의여지':['아트하우스'], '#사회적비평':['드라마'], '#잔잔한몰입':['드라마','아트하우스'], '#차가운긴장':['스릴러','느와르'], '#따뜻한카타르시스':['드라마'], '#빠른 전개와 편집':['스릴러'], '#긴장감 넘치는 명장면':['스릴러'] };
+                    (keywords?.prefer || []).forEach(k => { (keywordToGenres[k] || []).forEach(g => scores[g] = (scores[g] || 0) + 0.8); });
+                    (keywords?.avoid || []).forEach(k => { (keywordToGenres[k] || []).forEach(g => scores[g] = (scores[g] || 0) - 1.0); });
+                    if (style?.satisfaction === 'logical') { scores['스릴러'] += 0.8; }
+                    if (style?.satisfaction === 'emotional') { scores['드라마'] += 0.8; scores['아트하우스'] += 0.6; }
+                    if (style?.interpretation === 'abstract') { scores['아트하우스'] += 0.7; }
+                    if (style?.interpretation === 'concrete') { scores['스릴러'] += 0.4; scores['미스터리'] += 0.3; }
+                    const ordered = Object.entries(scores).sort((a,b) => b[1]-a[1]);
+                    const [top1, top2] = [ordered[0], ordered[1]];
+                    const margin = (top1?.[1] ?? 0) - (top2?.[1] ?? 0);
+                    return { scores, ordered, top1, top2, margin };
+                },
+                getPersonaData(answers) {
+                    let persona = { title: '균형잡힌 시네필', subtitle: '다양한 취향을 탐험하는 중', description: '다양한 장르와 스타일을 넘나들며 자신만의 영화 세계를 넓혀가는 탐험가입니다.', icon: 'fa-solid fa-compass', confidence: '낮음', evidence: [] };
+                    const { style = {}, keywords = { prefer:[], avoid:[] }, genres = {}, mbti = '' } = answers;
+                    const evidence = [];
+                    if (style.discovery) evidence.push({ type:'prefer', label:`탐색: ${style.discovery === 'individual' ? '자기주도' : '소셜'}` });
+                    if (style.interpretation) evidence.push({ type:'prefer', label:`해석: ${style.interpretation === 'abstract' ? '서브텍스트' : '텍스트'}` });
+                    if (style.satisfaction) evidence.push({ type:'prefer', label:`보상: ${style.satisfaction === 'logical' ? '구조적' : '정서적'}` });
+                    keywords.prefer.forEach(k => evidence.push({ type:'prefer', label:k }));
+                    keywords.avoid.forEach(k  => evidence.push({ type:'avoid',  label:k }));
+                    if (mbti.length === 4) evidence.push({ type:'prefer', label:`참고: ${mbti}` });
+                    const { top1, top2, margin } = this.computeGenreScores({ userTopGenres: ['스릴러','드라마'], genres, keywords, style });
+                    if (top1) evidence.push({ type:'prefer', label:`장르 가중치 Top: ${top1[0]} (+${top1[1].toFixed(1)})` });
+                    if (top2) evidence.push({ type:'prefer', label:`차순위: ${top2[0]} (+${top2[1].toFixed(1)})` });
+                    const baseSignals = evidence.length;
+                    const marginBoost = Math.max(0, Math.min(3, margin));
+                    const confidenceRaw = baseSignals + marginBoost;
+                    let confidenceLabel = `낮음 (${confidenceRaw.toFixed(1)})`;
+                    if (confidenceRaw >= 6) confidenceLabel = `중간 (${confidenceRaw.toFixed(1)})`;
+                    if (confidenceRaw >= 9) confidenceLabel = `높음 (${confidenceRaw.toFixed(1)})`;
+                    const dominant = top1?.[0];
+                    const g = genres[dominant] || { prefer:[], avoid:[] };
+                    const has = (label) => g.prefer?.some(p => p.includes(label));
+                    if (dominant === '스릴러') {
+                        if (has('퍼즐') || keywords.prefer.includes('#정교한복선') || style.satisfaction === 'logical') {
+                            persona = { title: '퍼즐 지향 구조파', subtitle: '스릴러 우세 · 구조적 쾌감 선호', description: '복선 회수와 개연성을 중시합니다. 편의적 반전/개연성 약함은 회피합니다.', icon: 'fa-solid fa-puzzle-piece', confidence: confidenceLabel, evidence };
+                        } else {
+                            persona = { title: '긴장 설계형 감상가', subtitle: '스릴러 우세 · 분위기·텐션 중시', description: '지속되는 긴장과 분위기 설계에 몰입합니다. 과도한 고어나 억지 전개는 선호하지 않습니다.', icon: 'fa-solid fa-heart-pulse', confidence: confidenceLabel, evidence };
+                        }
+                    } else if (dominant === '드라마') {
+                        if (has('리얼리즘') || keywords.prefer.includes('#리얼리즘')) {
+                            persona = { title: '리얼리즘 공감가', subtitle: '드라마 우세 · 현실감·인물선 선호', description: '현실적인 인물과 관계, 사회의 질감을 중시합니다. 설교적 메시지나 과한 감상주의는 회피합니다.', icon: 'fa-solid fa-people-group', confidence: confidenceLabel, evidence };
+                        } else if (has('사회적 비평') || keywords.prefer.includes('#사회적비평')) {
+                            persona = { title: '사회맥락 해석가', subtitle: '드라마 우세 · 맥락·의미 탐색', description: '작품이 사회와 교차하는 지점을 읽어내는 데서 쾌감을 얻습니다.', icon: 'fa-solid fa-scale-balanced', confidence: confidenceLabel, evidence };
+                        } else {
+                            persona = { title: '인물선 집중형 감상가', subtitle: '드라마 우세 · 정서적 공명', description: '인물의 감정선과 관계 변화에 깊게 몰입합니다.', icon: 'fa-solid fa-heart', confidence: confidenceLabel, evidence };
+                        }
+                    } else if (dominant === '아트하우스') {
+                        if (keywords.prefer.includes('#실험적편집') || style.interpretation === 'abstract') {
+                            persona = { title: '형식주의 탐험가', subtitle: '아트하우스 우세 · 형식·미장센', description: '실험적 형식과 미장센, 해석의 여지를 즐깁니다.', icon: 'fa-solid fa-wand-magic-sparkles', confidence: confidenceLabel, evidence };
+                        } else {
+                            persona = { title: '미학 감식가', subtitle: '아트하우스 우세 · 미학적 성취', description: '섬세한 연출·촬영·음향의 조화를 높게 평가합니다.', icon: 'fa-solid fa-palette', confidence: confidenceLabel, evidence };
+                        }
+                    } else {
+                        persona.confidence = confidenceLabel;
+                        persona.evidence = evidence;
+                    }
+                    return persona;
+                },
+                displayPersonaResult(data) {
+                    const P = this.persona;
+                    P.result.icon.className = `${data.icon} mb-4 text-7xl gradient-text`;
+                    P.result.title.textContent = data.title;
+                    P.result.subtitle.textContent = data.subtitle;
+                    P.result.desc.textContent = data.description;
+                    P.result.confidence.textContent = data.confidence;
+                    const container = P.result.evidence; container.innerHTML = '';
+                    const prefer = (data.evidence || []).filter(e => e.type==='prefer');
+                    const avoid = (data.evidence || []).filter(e => e.type==='avoid');
+                    if (prefer.length) {
+                        let html = '<div><h5 class="text-xs font-bold text-green-400 mb-2 flex items-center gap-2"><i class="fa-solid fa-thumbs-up"></i>선호 근거</h5><div class="flex flex-wrap gap-2">';
+                        prefer.forEach(item => { let cls = 'bg-purple-500/20 text-purple-300'; if (item.label.startsWith('참고:')) cls = 'bg-zinc-600/50 text-zinc-300'; html += `<span class="text-xs font-semibold px-2.5 py-1 rounded-full ${cls}">${item.label}</span>`; });
+                        html += '</div></div>'; container.innerHTML += html;
+                    }
+                    if (avoid.length) {
+                        let html = '<div><h5 class="text-xs font-bold text-red-400 mb-2 flex items-center gap-2"><i class="fa-solid fa-thumbs-down"></i>회피 근거</h5><div class="flex flex-wrap gap-2">';
+                        avoid.forEach(item => { html += `<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-500/20 text-red-300">${item.label}</span>`; });
+                        html += '</div></div>'; container.innerHTML += html;
+                    }
+                },
+                addEventListeners() {
+                    this.elements.sideNav.addEventListener('click', (e) => {
+                        const link = e.target.closest('a[data-tab]');
+                        if (link) { e.preventDefault(); this.switchTab(link.dataset.tab); }
+                    });
+                },
+                switchTab(targetId) {
+                    const activeLink = this.elements.sideNav.querySelector(`a[data-tab="${targetId}"]`);
+                    if (!activeLink) return;
+
+                    this.elements.tabLinks.forEach(link => {
+                        link.classList.toggle('active', link === activeLink);
+                        link.classList.toggle('text-zinc-400', link !== activeLink);
+                    });
+                    this.elements.contentSections.forEach(section => {
+                        section.classList.toggle('active', section.id === targetId);
+                    });
+                    
+                    document.title = `MOA | ${activeLink.querySelector('span > span')?.textContent || activeLink.textContent.trim()}`;
+                    
+                    if (targetId === 'dashboard' && !this.chartsRendered) {
+                        this.renderDashboardVisuals();
+                        this.chartsRendered = true;
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                renderDashboardVisuals() {
+                    Chart.register(ChartDataLabels);
+                    const chartTextColor = '#e5e7eb';
+                    const chartGridColor = 'rgba(55, 65, 81, 0.5)';
+                    
+                    const commonChartOptions = {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top', labels: { color: chartTextColor, font: { size: 12 } } } }
+                    };
+
+                    const genreCtx = document.getElementById('genreChart')?.getContext('2d');
+                    if (genreCtx) new Chart(genreCtx, {
+                        type: 'radar',
+                        data: { 
+                            labels: ['#스릴러', '#드라마', '#아트하우스', '#미스터리', '#느와르', '#SF'], 
+                            datasets: [{ 
+                                label: '나의 선호도', 
+                                data: [95, 85, 90, 55, 65, 60], 
+                                backgroundColor: 'rgba(167, 139, 250, 0.2)', 
+                                borderColor: '#a78bfa', 
+                                pointBackgroundColor: '#a78bfa', 
+                                pointBorderColor: '#fff',
+                                pointRadius: 4
+                            }, { 
+                                label: '커뮤니티 평균', 
+                                data: [65, 75, 55, 50, 40, 75], 
+                                backgroundColor: 'rgba(107, 114, 128, 0.05)', 
+                                borderColor: 'rgba(107, 114, 128, 0.3)', 
+                                pointBackgroundColor: 'rgba(107, 114, 128, 0.3)',
+                                pointRadius: 2
+                            }] 
+                        },
+                        options: { 
+                            ...commonChartOptions,
+                            scales: { 
+                                r: { 
+                                    angleLines: { color: chartGridColor }, 
+                                    grid: { color: chartGridColor }, 
+                                    pointLabels: { 
+                                        color: chartTextColor, 
+                                        font: { size: 12, weight: '500' } 
+                                    }, 
+                                    ticks: { display: false, backdropColor: 'transparent' },
+                                    suggestedMin: 0,
+                                    suggestedMax: 100
+                                } 
+                            },
+                            plugins: {
+                                legend: { display: true },
+                                tooltip: {
+                                    callbacks: {
+                                        title: function(context) {
+                                            const labels = ['스릴러', '드라마', '아트하우스', '미스터리', '느와르', 'SF'];
+                                            return labels[context[0].dataIndex];
+                                        }
+                                    }
+                                }
+                            }
+                        } 
+                    });
+                    
+                    const ratingCtx = document.getElementById('ratingChart')?.getContext('2d');
+                    if (ratingCtx) new Chart(ratingCtx, {
+                        type: 'bar',
+                        data: { labels: ['1점', '2점', '3점', '4점', '5점'], datasets: [{ label: '평가 비율', data: [1, 4, 15, 45, 35], backgroundColor: ['#4338ca', '#4f46e5', '#6366f1', '#818cf8', '#a78bfa'], borderRadius: 4 }] },
+                        options: { ...commonChartOptions, scales: { y: { beginAtZero: true, grid: { color: chartGridColor }, ticks: { color: chartTextColor, callback: (v) => v + '%' } }, x: { grid: { display: false }, ticks: { color: chartTextColor, font: { size: 14 } } } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: chartTextColor, font: { weight: 'bold' }, formatter: (v) => v + '%' } } }
+                    });
+
+                    const releaseYearCtx = document.getElementById('releaseYearChart')?.getContext('2d');
+                    if (releaseYearCtx) new Chart(releaseYearCtx, {
+                        type: 'line',
+                        data: { labels: ['1970s', '1980s', '1990s', '2000s', '2010s', '2020s'], datasets: [{ label: '선호도', data: [10, 25, 60, 75, 95, 90], fill: true, backgroundColor: 'rgba(129, 140, 248, 0.1)', borderColor: 'rgba(129, 140, 248, 1)', tension: 0.4 }] },
+                        options: { ...commonChartOptions, scales: { y: { display: false }, x: { grid: { color: chartGridColor }, ticks: { color: chartTextColor } } }, plugins: { legend: { display: false } } }
+                    });
+
+                    const countryCtx = document.getElementById('countryChart')?.getContext('2d');
+                    if(countryCtx) new Chart(countryCtx, {
+                        type: 'bar',
+                        data: { labels: ['미국', '한국', '영국', '일본', '기타'], datasets: [{ label: '시청 비중', data: [45, 25, 15, 10, 5], backgroundColor: ['#a78bfa', '#818cf8', '#6366f1', '#4f46e5', '#4338ca'], borderRadius: 4 }] },
+                        options: { ...commonChartOptions, indexAxis: 'y', scales: { y: { grid: { display: false }, ticks: { color: chartTextColor } }, x: { display: false } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', color: chartTextColor, font: { weight: 'bold' }, formatter: (v) => v + '%' } } }
+                    });
+
+                    // 활동 기록 섹션의 평가 차트
+                    const ratingActivityCtx = document.getElementById('ratingChartActivity')?.getContext('2d');
+                    if (ratingActivityCtx) new Chart(ratingActivityCtx, {
+                        type: 'bar',
+                        data: { labels: ['1점', '2점', '3점', '4점', '5점'], datasets: [{ label: '평가 비율', data: [1, 4, 15, 45, 35], backgroundColor: ['#4338ca', '#4f46e5', '#6366f1', '#818cf8', '#a78bfa'], borderRadius: 4 }] },
+                        options: { ...commonChartOptions, scales: { y: { beginAtZero: true, grid: { color: chartGridColor }, ticks: { color: chartTextColor, callback: (v) => v + '%' } }, x: { grid: { display: false }, ticks: { color: chartTextColor } } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: chartTextColor, font: { weight: 'bold' }, formatter: (v) => v + '%' } } }
+                    });
+                }
+            };
+            app.init();
+
+            // 모바일 탭 전환
+            const mobileTabs = document.querySelectorAll('[data-mobile-tab]');
+            const tabIndicator = document.getElementById('tabIndicator');
+            
+            mobileTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.dataset.mobileTab;
+                    const tabIndex = parseInt(this.dataset.index);
+                    
+                    // 탭 버튼 업데이트
+                    mobileTabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.classList.add('text-zinc-400');
+                        t.classList.remove('text-white');
+                    });
+                    this.classList.add('active');
+                    this.classList.remove('text-zinc-400');
+                    this.classList.add('text-white');
+                    
+                    // 인디케이터 이동
+                    const indicatorWidth = 'calc(33.333% - 8px)';
+                    const moveDistance = tabIndex * (100 / 3);
+                    tabIndicator.style.left = `calc(${moveDistance}% + 6px)`;
+                    tabIndicator.style.width = indicatorWidth;
+                    
+                    // 모바일에서 보관함 탭은 컬렉션으로 매핑
+                    if (targetTab === 'collections') {
+                        app.switchTab('collections');
+                    } else {
+                        app.switchTab(targetTab);
+                    }
+                });
+            });
+
+        });
+    </script>
+
+    <!-- ===== 최적 푸터 시작 ===== -->
+    <footer class="border-t border-zinc-800/50 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <!-- 평가 카운트 - improved 버전의 배지 디자인 -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900/50 rounded-xl border border-zinc-800">
+                    <i class="fas fa-star text-purple-400 text-base"></i>
+                    <span class="text-sm text-zinc-300">지금까지</span>
+                    <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">647,152,894</span>
+                    <span class="text-sm text-zinc-300">개의 평가가 쌓였어요</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row justify-between gap-8">
+                <!-- 왼쪽 데이터 영역 -->
+                <div class="space-y-4 flex-1">
+                    <!-- 상단 약관 링크 -->
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">서비스 이용약관</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">개인정보 처리방침</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">회사 안내</a>
+                    </div>
+
+                    <!-- 문의 정보 -->
+                    <div class="space-y-1.5 text-xs text-zinc-500">
+                        <div>
+                            <span>고객센터</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:cs@moa.com" class="hover:text-purple-400 transition">cs@moa.com</a>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <span>02-123-4567</span>
+                        </div>
+                        <div>
+                            <span>광고 문의</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:ad@moa.com" class="hover:text-purple-400 transition">ad@moa.com</a>
+                        </div>
+                        <div>
+                            <span>제휴 및 대외 협력</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="https://moa.team/contact" class="hover:text-purple-400 transition">moa.team/contact</a>
+                        </div>
+                    </div>
+
+                    <!-- 회사 정보 & 저작권 -->
+                    <div class="space-y-1.5">
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-600">
+                            <span>(주)모아</span>
+                            <span>•</span>
+                            <span>대표 김모아</span>
+                            <span>•</span>
+                            <span>사업자등록번호 123-45-67890</span>
+                            <span>•</span>
+                            <span>서울시 강남구 테헤란로 417</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 오른쪽 언어 & 소셜 영역 -->
+                <div class="flex flex-col items-start lg:items-end gap-4 lg:gap-6">
+                    <!-- 언어 선택 -->
+                    <div class="relative">
+                        <select class="appearance-none bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 hover:bg-zinc-800 transition-all cursor-pointer pr-10 font-medium">
+                            <option value="ko" selected>한국어</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                        </select>
+                        <i class="fas fa-chevron-down text-xs text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                    
+                    <!-- 소셜 아이콘 -->
+                    <div class="flex items-center gap-3">
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-purple-500/10 border border-zinc-700/50 hover:border-purple-500/50 flex items-center justify-center transition-all group" aria-label="Facebook">
+                            <i class="fa-brands fa-facebook text-base text-zinc-400 group-hover:text-purple-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-indigo-500/10 border border-zinc-700/50 hover:border-indigo-500/50 flex items-center justify-center transition-all group" aria-label="Twitter">
+                            <i class="fa-brands fa-twitter text-base text-zinc-400 group-hover:text-indigo-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-pink-500/10 border border-zinc-700/50 hover:border-pink-500/50 flex items-center justify-center transition-all group" aria-label="Instagram">
+                            <i class="fa-brands fa-instagram text-base text-zinc-400 group-hover:text-pink-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-red-500/10 border border-zinc-700/50 hover:border-red-500/50 flex items-center justify-center transition-all group" aria-label="YouTube">
+                            <i class="fa-brands fa-youtube text-base text-zinc-400 group-hover:text-red-400 transition-colors"></i>
+                        </a>
+                    </div>
+
+                    <!-- 저작권 - 우측 하단 -->
+                    <div class="text-xs text-zinc-600 whitespace-nowrap">
+                        © 2025 MOA, Inc. All rights reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- ===== 최적 푸터 끝 ===== -->
+    
+    <!-- 모바일 GNB -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-md border-t border-zinc-800 md:hidden z-50">
+        <div class="flex items-center justify-around h-16 py-2">
+            <a href="./02 홈화면_리뉴얼V12.html" class="flex flex-col items-center gap-1 text-zinc-500">
+                <i class="fas fa-home text-lg"></i>
+                <span class="text-xs">홈</span>
+            </a>
+            <a href="./04 검색필드_리뉴얼v2.html" class="flex flex-col items-center gap-1 text-zinc-500">
+                <i class="fas fa-search text-base"></i>
+                <span class="text-xs">검색</span>
+            </a>
+            <a href="./08 마이페이지_리뉴얼V5.html" class="flex flex-col items-center gap-1 text-white">
+                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 overflow-hidden">
+                    <img src="./내 프로필 사진/profile.jpg" alt="profile" class="w-full h-full object-cover">
+                </div>
+                <span class="text-xs">MY</span>
+            </a>
+        </div>
+    </nav>
+    
+    <div class="h-20 md:hidden"></div>
+</body>
+</html>

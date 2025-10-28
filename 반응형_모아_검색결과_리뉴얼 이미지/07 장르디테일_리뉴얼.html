@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>스릴러 - MOA</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { 
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: linear-gradient(180deg, #000 0%, #0a0514 50%, #000 100%);
+            color: #e5e5e5;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.02em;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-border {
+            border: 1px solid transparent;
+            background: linear-gradient(#18181b, #18181b) padding-box,
+                        linear-gradient(135deg, #a78bfa40, #818cf840) border-box;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md border-b border-zinc-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-8">
+                    <a href="./02 홈화면_리뉴얼V12.html" class="flex items-center gap-2 flex-shrink-0">
+                        <div class="w-6 h-6 rounded bg-gradient-to-br from-purple-400 to-indigo-500"></div>
+                        <span class="font-bold text-lg text-white">MOA</span>
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex flex-1 justify-center px-8">
+                    <div class="relative w-full max-w-sm">
+                        <input type="text" placeholder="작품, 인물, 컬렉션을 검색해보세요" onclick="window.location.href='./04 검색필드_리뉴얼v2.html'" class="w-full h-10 bg-zinc-800 border border-zinc-600 rounded-lg pl-10 pr-4 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:border-purple-500 transition">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fas fa-search text-zinc-400 text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1">
+                    <button class="md:hidden w-9 h-9 rounded-full hover:bg-zinc-900 flex items-center justify-center transition flex-shrink-0" onclick="window.location.href='./04 검색필드_리뉴얼v2.html'">
+                        <i class="fas fa-search text-sm"></i>
+                    </button>
+                    <button class="w-9 h-9 rounded-full hover:bg-zinc-900 flex items-center justify-center transition flex-shrink-0">
+                        <i class="far fa-bell text-sm"></i>
+                    </button>
+                    <button class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 overflow-hidden flex-shrink-0" onclick="window.location.href='./08 마이페이지_리뉴얼V5.html'">
+                        <img src="./내 프로필 사진/profile.jpg" alt="profile" class="w-full h-full object-cover">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-16">
+        <div class="space-y-8">
+            <!-- Page Title -->
+            <h1 id="page-title" class="text-4xl font-bold text-white">스릴러</h1>
+            
+            <!-- Tab Navigation -->
+            <div class="border-b border-zinc-800">
+                <nav id="tab-navigation" class="-mb-px flex gap-6" aria-label="Tabs">
+                    <a href="#" data-filter="all" class="shrink-0 border-b-2 border-purple-500 px-1 py-3 text-base font-semibold gradient-text">전체</a>
+                    <a href="#" data-filter="movie" class="shrink-0 border-b-2 border-transparent px-1 py-3 text-base font-semibold text-zinc-500 hover:border-zinc-500 hover:text-zinc-400 transition">영화</a>
+                    <a href="#" data-filter="series" class="shrink-0 border-b-2 border-transparent px-1 py-3 text-base font-semibold text-zinc-500 hover:border-zinc-500 hover:text-zinc-400 transition">시리즈</a>
+                </nav>
+            </div>
+            
+            <!-- Filter Bar & Toggle -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div id="filter-bar" class="flex flex-wrap gap-2"></div>
+                <div class="flex items-center gap-4">
+                    <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                        <input type="checkbox" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-zinc-800 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-indigo-500 transition"></div>
+                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition peer-checked:translate-x-5"></div>
+                        <span class="ml-3 text-sm font-medium text-zinc-400">내 구독만</span>
+                    </label>
+                    <div class="flex items-center group">
+                        <!-- 넷플릭스 - 호버시 티빙, 쿠팡플레이, 웨이브 표시 -->
+                        <div class="relative">
+                            <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center -ml-2 z-30"><img src="./모아_OTT_로고이미지/btn_squircle_netflix.png" class="w-4 h-4 object-contain"></div>
+                            <div class="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-40">
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center"><img src="./모아_OTT_로고이미지/btn_squircle_tving.png" class="w-4 h-4 object-contain"></div>
+                            </div>
+                            <div class="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 z-50">
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center"><img src="./모아_OTT_로고이미지/btn_squircle_coupangplay.png" class="w-4 h-4 object-contain"></div>
+                            </div>
+                            <div class="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200 z-60">
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center"><img src="./모아_OTT_로고이미지/btn_squircle_wavve.png" class="w-4 h-4 object-contain"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- 왓챠 - 호버시 라프텔, 씨네폭스, 유튜브 표시 -->
+                        <div class="relative">
+                            <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center -ml-2 z-30"><img src="./모아_OTT_로고이미지/btn_squircle_watcha.png" class="w-4 h-4 object-contain"></div>
+                            <div class="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-40">
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center"><img src="./모아_OTT_로고이미지/btn_squircle_laftel.png" class="w-4 h-4 object-contain"></div>
+                            </div>
+                            <div class="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 z-50">
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center"><img src="./모아_OTT_로고이미지/btn_squircle_cinefox.png" class="w-4 h-4 object-contain"></div>
+                            </div>
+                            <div class="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200 z-60">
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center"><img src="./모아_OTT_로고이미지/btn_squircle_youtube.svg" class="w-4 h-4 object-contain"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- 디즈니+ - 호버시 애플티비+, 아마존 프라임, U+모바일tv 표시 -->
+                        <div class="relative">
+                            <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center -ml-2 z-30"><img src="./모아_OTT_로고이미지/btn_squircle_disneyplus.png" class="w-4 h-4 object-contain"></div>
+                            <div class="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-40">
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center"><img src="./모아_OTT_로고이미지/btn_squircle_appletv.png" class="w-4 h-4 object-contain"></div>
+                            </div>
+                            <div class="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 z-50">
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center"><img src="./모아_OTT_로고이미지/btn_squircle_amazon.png" class="w-4 h-4 object-contain"></div>
+                            </div>
+                            <div class="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200 z-60">
+                                <div class="w-6 h-6 rounded-full border-2 border-white bg-black flex items-center justify-center"><img src="./모아_OTT_로고이미지/btn_squircle_lguplus.png" class="w-4 h-4 object-contain"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="w-7 h-7 rounded-full hover:bg-zinc-800 flex items-center justify-center transition" title="구독 서비스 관리">
+                        <i class="fas fa-edit text-zinc-400 text-xs"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Works Grid - 카드 간격 증가: 세로 48px -->
+            <div id="works-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-12"></div>
+        </div>
+    </main>
+
+    <script>
+        const allWorks = [
+            { title: "박쥐", year: 2009, category: "movie", tags: ["스릴러", "공포", "한국", "반전"], img: "./반응형_모아_장르디테일/1.1_박쥐.jpg", services: ['netflix'], userScore: 4.2 },
+            { title: "아가씨", year: 2016, category: "movie", tags: ["스릴러", "미스터리", "한국", "반전"], img: "./반응형_모아_장르디테일/1.2_아가씨.jpg", services: ['watcha'], userScore: 4.1 },
+            { title: "인간실격", year: 2019, category: "movie", tags: ["스릴러", "드라마", "한국", "심리"], img: "./반응형_모아_장르디테일/1.3_인간실격.jpg", services: ['netflix'], userScore: 3.8 },
+            { title: "차가운 열대어", year: 2010, category: "movie", tags: ["스릴러", "범죄", "한국", "느와르"], img: "./반응형_모아_장르디테일/1.4_차가운열대어.jpg", services: ['watcha'], userScore: 3.9 },
+            { title: "기도의 막이 내릴 때", year: 2018, category: "movie", tags: ["스릴러", "미스터리", "한국", "반전"], img: "./반응형_모아_장르디테일/1.5_기도의막이내릴떄.webp", services: ['disney'], userScore: 4.0 },
+            { title: "세 번째 살인", year: 2017, category: "movie", tags: ["스릴러", "법정", "일본", "미스터리"], img: "./반응형_모아_장르디테일/1.6_세번째살인.jpg", services: ['netflix'], userScore: 3.7 },
+            { title: "케빈에 대하여", year: 2011, category: "movie", tags: ["스릴러", "심리", "미국", "가족"], img: "./반응형_모아_장르디테일/2.1_케빈에대하여.jpg", services: ['watcha'], userScore: 4.3 },
+            { title: "장화, 홍련", year: 2003, category: "movie", tags: ["스릴러", "공포", "한국", "오컬트"], img: "./반응형_모아_장르디테일/2.2_장화홍련.jpg", services: ['netflix'], userScore: 4.0 },
+            { title: "거미의 성", year: 1957, category: "movie", tags: ["스릴러", "미스터리", "일본", "클래식"], img: "./반응형_모아_장르디테일/2.3_거미의성.jpg", services: ['disney'], userScore: 4.4 },
+            { title: "유성의 인연", year: 2008, category: "series", tags: ["스릴러", "로맨스", "한국", "드라마"], img: "./반응형_모아_장르디테일/2.4_유성의연인.jpg", services: ['watcha'], userScore: 3.6 },
+            { title: "레전드", year: 2015, category: "movie", tags: ["스릴러", "범죄", "영국", "실화 바탕"], img: "./반응형_모아_장르디테일/2.5_레전드.jpg", services: ['netflix'], userScore: 3.8 },
+            { title: "화차", year: 2012, category: "movie", tags: ["스릴러", "범죄", "한국", "추격"], img: "./반응형_모아_장르디테일/2.6_화차.jpg", services: ['watcha'], userScore: 4.1 },
+            { title: "아포칼립토", year: 2006, category: "movie", tags: ["스릴러", "액션", "미국", "모험"], img: "./반응형_모아_장르디테일/3.1_아포칼립토.jpg", services: ['disney'], userScore: 3.9 },
+            { title: "잔향의 테러", year: 2014, category: "movie", tags: ["스릴러", "애니메이션", "일본", "테러"], img: "./반응형_모아_장르디테일/3.2_잔향의테러.jpg", services: ['netflix'], userScore: 3.5 },
+            { title: "불릿트레인", year: 2022, category: "movie", tags: ["스릴러", "액션", "미국", "블록버스터"], img: "./반응형_모아_장르디테일/3.3_불릿트레인.jpg", services: ['watcha'], userScore: 3.7 },
+            { title: "디지몬 어드벤처 1기: 운명적 만남", year: 1999, category: "series", tags: ["스릴러", "애니메이션", "일본", "모험"], img: "./반응형_모아_장르디테일/3.4_디지몬어드벤처1기.jpg", services: ['disney'], userScore: 3.4 },
+            { title: "김복남 살인 사건의 전말", year: 2010, category: "movie", tags: ["스릴러", "범죄", "한국", "실화 바탕"], img: "./반응형_모아_장르디테일/3.5_김복남 살인 사건의 전말.jpg", services: ['netflix'], userScore: 4.2 },
+            { title: "갈증", year: 2014, category: "movie", tags: ["스릴러", "공포", "한국", "오컬트"], img: "./반응형_모아_장르디테일/3.6_갈등.webp", services: ['watcha'], userScore: 3.8 },
+            { title: "색, 계", year: 2007, category: "movie", tags: ["스릴러", "미스터리", "한국", "반전"], img: "./반응형_모아_장르디테일/4.1_색계.jpg", services: ['netflix'], userScore: 4.0 },
+            { title: "괴물", year: 2006, category: "movie", tags: ["스릴러", "SF", "한국", "봉준호"], img: "./반응형_모아_장르디테일/4.2_괴물.jpg", services: ['disney'], userScore: 4.3 },
+            { title: "트라이앵글", year: 2009, category: "movie", tags: ["스릴러", "미스터리", "한국", "반전"], img: "./반응형_모아_장르디테일/4.3_트라이앵글.jpg", services: ['watcha'], userScore: 3.9 },
+            { title: "검찰 측 증인", year: 1957, category: "movie", tags: ["스릴러", "법정", "미국", "클래식"], img: "./반응형_모아_장르디테일/4.4_검찰즉증인.jpg", services: ['netflix'], userScore: 4.5 },
+            { title: "사형대의 엘리베이터", year: 1957, category: "movie", tags: ["스릴러", "미스터리", "미국", "클래식"], img: "./반응형_모아_장르디테일/4.5_사형대의 엘리베이터.jpg", services: ['disney'], userScore: 4.4 },
+            { title: "악의 교전", year: 2012, category: "movie", tags: ["스릴러", "범죄", "일본", "느와르"], img: "./반응형_모아_장르디테일/4.6_악의교전.webp", services: ['watcha'], userScore: 4.1 },
+            { title: "디스트릭트 9", year: 2009, category: "movie", tags: ["스릴러", "SF", "미국", "외계인"], img: "https://image.tmdb.org/t/p/w400/placeholder.jpg", services: ['netflix'], userScore: 3.8 },
+            { title: "비밀은 없다", year: 2015, category: "movie", tags: ["스릴러", "미스터리", "한국", "반전"], img: "https://image.tmdb.org/t/p/w400/placeholder.jpg", services: ['watcha'], userScore: 3.6 },
+            { title: "얼음의 세계", year: 1999, category: "series", tags: ["스릴러", "드라마", "한국", "로맨스"], img: "https://image.tmdb.org/t/p/w400/placeholder.jpg", services: ['disney'], userScore: 3.7 },
+            { title: "가스등", year: 1944, category: "movie", tags: ["스릴러", "미스터리", "미국", "클래식"], img: "https://image.tmdb.org/t/p/w400/placeholder.jpg", services: ['netflix'], userScore: 4.2 },
+            { title: "365: 운명을 거스르는 1년", year: 2020, category: "series", tags: ["스릴러", "미스터리", "한국", "시간여행"], img: "https://image.tmdb.org/t/p/w400/placeholder.jpg", services: ['watcha'], userScore: 3.9 },
+        ];
+        
+        const genreFilters = {
+            "스포츠": ["실화 바탕", "성장 드라마", "감동적인", "경쟁", "팀워크", "농구", "야구", "배구", "한국", "미국", "일본"],
+            "로맨틱 코미디": ["달달한", "사랑", "유쾌한", "코미디", "성장", "오해", "재회", "한국", "미국", "영국"],
+            "스릴러": ["반전", "수사", "범죄", "긴장감", "심리", "느와르", "블랙 코미디", "한국", "미국"],
+            "애니메이션": ["일본", "미국", "판타지", "성장", "액션", "SF", "가족", "디즈니", "픽사", "지브리"],
+            "범죄": ["수사", "경찰", "마피아", "느와르", "스릴러", "실화 바탕", "법정", "한국", "미국"],
+            "공포": ["오컬트", "좀비", "슬래셔", "초자연적", "긴장감", "B급", "미스터리"],
+            "미스터리": ["수사", "반전", "추리", "긴장감", "심리", "범죄", "공포"],
+            "액션": ["슈퍼히어로", "SF", "블록버스터", "범죄", "느와르"],
+            "판타지": ["모험", "뮤지컬", "애니메이션", "지브리"],
+            "SF": ["액션", "블록버스터", "미스터리", "디스토피아"],
+            "default": ["명작", "연기력", "OST", "영상미", "미장센", "사랑", "슬픈", "철학적인"]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const currentGenre = params.get('genre') || "스릴러";
+            renderPage(currentGenre);
+        });
+
+        function renderPage(genre) {
+            document.getElementById('page-title').textContent = genre;
+            document.title = genre + ' - MOA';
+            renderFilters(genre);
+            renderWorks(genre);
+            setupTabFiltering();
+        }
+
+        function renderFilters(genre) {
+            const filterBar = document.getElementById('filter-bar');
+            filterBar.innerHTML = ''; 
+            const filters = [genre, ...(genreFilters[genre] || genreFilters["default"])];
+            
+            filters.forEach((filterText, index) => {
+                const button = createFilterButton(filterText, index === 0);
+                filterBar.appendChild(button);
+            });
+            setupFilterInteractions();
+        }
+        
+        function createFilterButton(text, isActive) {
+            const button = document.createElement('button');
+            button.dataset.filterTag = text;
+            if (isActive) {
+                button.className = "h-9 px-3 pl-4 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-sm font-semibold flex items-center gap-1 cursor-pointer";
+                button.innerHTML = `<span>${text}</span><div class="filter-x-button h-6 w-6 rounded-full bg-purple-600 hover:bg-purple-700 text-white/90 text-xs flex items-center justify-center transition">×</div>`;
+            } else {
+                button.className = "h-9 px-4 rounded-full bg-zinc-900 text-zinc-400 text-sm font-semibold border border-zinc-800 transition-colors hover:border-zinc-700 hover:text-zinc-300 cursor-pointer";
+                button.textContent = text;
+            }
+            return button;
+        }
+
+        function renderWorks(genre) {
+            const worksGrid = document.getElementById('works-grid');
+            worksGrid.innerHTML = '';
+            let workItems = allWorks.filter(work => work.tags.includes(genre));
+            
+            if (workItems.length < 24) {
+                const fillerNeeded = 24 - workItems.length;
+                const existingTitles = new Set(workItems.map(w => w.title));
+                const fillerPool = allWorks.filter(work => !existingTitles.has(work.title));
+                
+                for (let i = 0; i < fillerNeeded && i < fillerPool.length; i++) {
+                    workItems.push(fillerPool[i]);
+                }
+            }
+
+            workItems.slice(0, 24).forEach(work => {
+                // CTA 아이콘: 넷플릭스/왓챠/디즈니+ 우선 표시, 없으면 재생 아이콘 (항상 고정 24x24 컨테이너)
+                const ctaLogoHTML = (() => {
+                    const s = (work.services || []);
+                    const wrapImg = (src) => `<div class="w-6 h-6 flex items-center justify-center overflow-hidden"><img src="${src}" class="w-full h-full object-contain"></div>`;
+                    if (s.includes('netflix')) return wrapImg('./모아_OTT_로고이미지/btn_squircle_netflix.png');
+                    if (s.includes('watcha')) return wrapImg('./모아_OTT_로고이미지/btn_squircle_watcha.png');
+                    if (s.includes('disney')) return wrapImg('./모아_OTT_로고이미지/btn_squircle_disneyplus.png');
+                    return '<div class="w-6 h-6 flex items-center justify-center"><i class="fas fa-play text-xs text-white"></i></div>';
+                })();
+
+                const workElement = document.createElement('div');
+                // 크기 수정: w-48에서 제거하여 그리드에 맞춤
+                workElement.className = "group relative";
+                workElement.dataset.category = work.category;
+                workElement.dataset.tags = work.tags.join(',');
+                workElement.innerHTML = `
+                    <div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative">
+                        <img src="${work.img}" alt="${work.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        
+                        <!-- Hover Overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-25"></div>
+                        <div class="absolute top-0 left-0 right-0 p-3 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30">
+                                    <button class="w-8 h-8 rounded-full bg-zinc-900/80 backdrop-blur-sm flex items-center justify-center text-white hover:bg-zinc-800 transition">
+                                        <i class="far fa-bookmark text-sm"></i>
+                                    </button>
+                                    <button class="w-8 h-8 rounded-full bg-zinc-900/80 backdrop-blur-sm flex items-center justify-center text-white hover:bg-zinc-800 transition">
+                                <i class="far fa-heart text-sm"></i>
+                                    </button>
+                        </div>
+                        
+                        <!-- CTA Button -->
+                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                            <button class="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 rounded-lg flex items-center justify-center gap-2 px-4 py-2 whitespace-nowrap shadow-lg">
+                                ${ctaLogoHTML}
+                                <span class="text-white font-semibold text-sm">지금 시청하기</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="font-semibold text-white truncate">${work.title}</div>
+                    <div class="text-sm text-zinc-500 mt-1">${work.year} · ${work.category === 'movie' ? '영화' : '시리즈'}</div>
+                    <div class="flex items-center gap-1.5 mt-1">
+                        <i class="fas fa-star text-zinc-400 text-sm"></i>
+                        <span class="text-sm font-medium text-zinc-300">${work.userScore}</span>
+                        <span class="text-xs text-zinc-500 ml-1.5">평균</span>
+                    </div>`;
+                worksGrid.appendChild(workElement);
+            });
+            updateVisibleWorks(true);
+        }
+
+        function setupFilterInteractions() {
+            document.getElementById('filter-bar').addEventListener('click', (event) => {
+                const button = event.target.closest('button[data-filter-tag]');
+                if (!button) return;
+
+                const wasActive = button.classList.contains('from-purple-500');
+                
+                if (event.target.closest('.filter-x-button')) {
+                    deactivateButton(button);
+                } else {
+                    if (wasActive) deactivateButton(button);
+                    else activateButton(button);
+                }
+                updateVisibleWorks();
+            });
+        }
+        
+        function activateButton(button) {
+            button.className = "h-9 px-3 pl-4 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-sm font-semibold flex items-center gap-1 cursor-pointer";
+            button.innerHTML = `<span>${button.dataset.filterTag}</span><div class="filter-x-button h-6 w-6 rounded-full bg-purple-600 hover:bg-purple-700 text-white/90 text-xs flex items-center justify-center transition">×</div>`;
+        }
+
+        function deactivateButton(button) {
+            button.className = "h-9 px-4 rounded-full bg-zinc-900 text-zinc-400 text-sm font-semibold border border-zinc-800 transition-colors hover:border-zinc-700 hover:text-zinc-300 cursor-pointer";
+            button.innerHTML = button.dataset.filterTag;
+        }
+
+        function setupTabFiltering() {
+            const tabs = document.querySelectorAll('#tab-navigation a');
+            tabs.forEach(tab => tab.addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                updateActiveTab(tab.dataset.filter); 
+                updateVisibleWorks(); 
+            }));
+        }
+        
+        function updateActiveTab(filter) {
+            document.querySelectorAll('#tab-navigation a').forEach(t => {
+                t.classList.remove('border-purple-500', 'gradient-text');
+                t.classList.add('border-transparent', 'text-zinc-500');
+            });
+            const activeTab = document.querySelector(`#tab-navigation a[data-filter="${filter}"]`);
+            activeTab.classList.remove('border-transparent', 'text-zinc-500');
+            activeTab.classList.add('border-purple-500', 'gradient-text');
+        }
+
+        function updateVisibleWorks() {
+            const activeTabFilter = document.querySelector('#tab-navigation a.border-purple-500').dataset.filter;
+            let activeTagFilters = Array.from(document.querySelectorAll('#filter-bar button.from-purple-500')).map(b => b.dataset.filterTag);
+            const works = document.querySelectorAll('#works-grid > div');
+            const mainGenreFilter = document.querySelector('#filter-bar button:first-child')?.dataset.filterTag;
+
+            let isFilteringActive = true;
+            if (activeTagFilters.length === 1 && activeTagFilters[0] === mainGenreFilter) {
+                isFilteringActive = false;
+            }
+
+            works.forEach(work => {
+                const categoryMatch = (activeTabFilter === 'all' || work.dataset.category === activeTabFilter);
+                const workTags = work.dataset.tags.split(',');
+                
+                const tagsMatch = !isFilteringActive || activeTagFilters.every(tag => workTags.includes(tag));
+                
+                work.style.display = (categoryMatch && tagsMatch) ? 'block' : 'none';
+            });
+        }
+    </script>
+
+    <!-- ===== 최적 푸터 시작 ===== -->
+    <footer class="border-t border-zinc-800/50 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <!-- 평가 카운트 - improved 버전의 배지 디자인 -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900/50 rounded-xl border border-zinc-800">
+                    <i class="fas fa-star text-purple-400 text-base"></i>
+                    <span class="text-sm text-zinc-300">지금까지</span>
+                    <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">647,152,894</span>
+                    <span class="text-sm text-zinc-300">개의 평가가 쌓였어요</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row justify-between gap-8">
+                <!-- 왼쪽 정보 영역 -->
+                <div class="space-y-4 flex-1">
+                    <!-- 상단 약관 링크 -->
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">서비스 이용약관</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">개인정보 처리방침</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">회사 안내</a>
+                    </div>
+
+                    <!-- 문의 정보 -->
+                    <div class="space-y-1.5 text-xs text-zinc-500">
+                        <div>
+                            <span>고객센터</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:cs@moa.com" class="hover:text-purple-400 transition">cs@moa.com</a>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <span>02-123-4567</span>
+                        </div>
+                        <div>
+                            <span>광고 문의</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:ad@moa.com" class="hover:text-purple-400 transition">ad@moa.com</a>
+                        </div>
+                        <div>
+                            <span>제휴 및 대외 협력</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="https://moa.team/contact" class="hover:text-purple-400 transition">moa.team/contact</a>
+                        </div>
+                    </div>
+
+                    <!-- 회사 정보 & 저작권 -->
+                    <div class="space-y-1.5">
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-600">
+                            <span>(주)모아</span>
+                            <span>•</span>
+                            <span>대표 김모아</span>
+                            <span>•</span>
+                            <span>사업자등록번호 123-45-67890</span>
+                            <span>•</span>
+                            <span>서울시 강남구 테헤란로 417</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 오른쪽 언어 & 소셜 영역 -->
+                <div class="flex flex-col items-start lg:items-end gap-4 lg:gap-6">
+                    <!-- 언어 선택 -->
+                    <div class="relative">
+                        <select class="appearance-none bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 hover:bg-zinc-800 transition-all cursor-pointer pr-10 font-medium">
+                            <option value="ko" selected>한국어</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                        </select>
+                        <i class="fas fa-chevron-down text-xs text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                    
+                    <!-- 소셜 아이콘 -->
+                    <div class="flex items-center gap-3">
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-purple-500/10 border border-zinc-700/50 hover:border-purple-500/50 flex items-center justify-center transition-all group" aria-label="Facebook">
+                            <i class="fa-brands fa-facebook text-base text-zinc-400 group-hover:text-purple-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-indigo-500/10 border border-zinc-700/50 hover:border-indigo-500/50 flex items-center justify-center transition-all group" aria-label="Twitter">
+                            <i class="fa-brands fa-twitter text-base text-zinc-400 group-hover:text-indigo-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-pink-500/10 border border-zinc-700/50 hover:border-pink-500/50 flex items-center justify-center transition-all group" aria-label="Instagram">
+                            <i class="fa-brands fa-instagram text-base text-zinc-400 group-hover:text-pink-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-red-500/10 border border-zinc-700/50 hover:border-red-500/50 flex items-center justify-center transition-all group" aria-label="YouTube">
+                            <i class="fa-brands fa-youtube text-base text-zinc-400 group-hover:text-red-400 transition-colors"></i>
+                        </a>
+                    </div>
+
+                    <!-- 저작권 - 우측 하단 -->
+                    <div class="text-xs text-zinc-600 whitespace-nowrap">
+                        © 2025 MOA, Inc. All rights reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- ===== 최적 푸터 끝 ===== -->
+</body>
+</html>

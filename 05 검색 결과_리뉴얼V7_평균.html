@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MOA | '분노' 검색 결과</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- MOA 스타일 가이드 기반 기본 스타일 --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { 
+            scroll-behavior: smooth; 
+            overflow-y: scroll; /* 스크롤바 영역을 항상 확보하여 레이아웃 이동 방지 */
+        }
+        body { 
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: linear-gradient(180deg, #000 0%, #0a0514 50%, #000 100%);
+            color: #e5e5e5;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.02em;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-border {
+            border: 1px solid transparent;
+            background: linear-gradient(#18181b, #18181b) padding-box,
+                        linear-gradient(135deg, #a78bfa40, #818cf840) border-box;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 모바일 필터 시트 스타일 */
+        .filter-sheet {
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .filter-sheet.active {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .filter-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .filter-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* 모바일 필터 버튼 스타일 */
+        .mobile-filter-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border: 2px solid #a78bfa;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.5);
+        }
+        .mobile-filter-btn:active {
+            transform: scale(0.95);
+        }
+        .mobile-filter-btn:hover {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.6);
+        }
+        
+        /* 모바일/태블릿에서 OTT 아이콘 크기 조정 */
+        @media (max-width: 1023px) {
+            .ott-btn {
+                padding: 0.25rem !important;
+            }
+            .ott-btn img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        }
+        
+        /* PC 버전 원래 디자인 복구 */
+        @media (min-width: 1024px) {
+            .ott-btn {
+                padding: 0.25rem;
+            }
+            .ott-btn img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            footer { display: none !important; }
+            /* 모바일에서 호버 효과 완전 비활성화 - 깜빡거림 방지 */
+            * {
+                transition: none !important;
+                animation: none !important;
+            }
+            *:hover,
+            *:focus,
+            *:active {
+                transform: none !important;
+                scale: none !important;
+                box-shadow: none !important;
+                background-color: inherit !important;
+                color: inherit !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                border-color: inherit !important;
+                transition: none !important;
+                animation: none !important;
+            }
+            .group:hover *,
+            .group:focus *,
+            .group:active * {
+                transform: none !important;
+                scale: none !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                transition: none !important;
+                animation: none !important;
+            }
+            .transition,
+            .transition-colors,
+            .transition-transform,
+            .transition-opacity,
+            .transition-all {
+                transition: none !important;
+            }
+        }
+
+        .rating-container { display: inline-flex; direction: rtl; position: relative; }
+        .rating-container input { display: none; }
+        .rating-container label {
+            cursor: pointer;
+            width: 0.875rem; /* 14px */
+            height: 1.75rem; /* 28px */
+            line-height: 1.75rem;
+            font-size: 1.75rem; /* 28px */
+            color: #404040;
+            overflow: hidden;
+            transition: color 0.15s ease-in-out;
+            position: relative;
+        }
+        .rating-container label i { position: absolute; top: 0; left: 0; width: 1.75rem; text-align: center; }
+        .rating-container label:nth-of-type(odd) i { left: -0.875rem; }
+        .rating-container input:checked ~ label,
+        .rating-container label:hover,
+        .rating-container label:hover ~ label { color: #FFD700; }
+        
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 0.375rem; background: #3f3f46;
+            border-radius: 0.25rem; outline: none; opacity: 0.8;
+            transition: opacity .2s;
+        }
+        input[type="range"]:hover { opacity: 1; }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 1rem; height: 1rem; border-radius: 50%;
+            background: #a78bfa; cursor: pointer;
+            border: 2px solid #18181b;
+        }
+
+        .mobile-filter-open {
+            transform: translateX(0);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        }
+
+        /* --- 피드백 반영: 활성화된 버튼 스타일 --- */
+        .filter-active-btn {
+            background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* 필터 칩 스타일 개선 */
+        .filter-chip {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+            font-weight: 500;
+        }
+        .filter-chip:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+        }
+        .filter-chip.active {
+            background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+            color: white;
+            border-color: #a78bfa;
+        }
+        
+        /* 모바일/태블릿에서만 아웃라인 스타일 적용 */
+        @media (max-width: 1023px) {
+            .filter-chip.active {
+                background: transparent;
+                border: 2px solid #c4b5fd;
+                color: #c4b5fd;
+                font-weight: 600;
+            }
+        }
+        .filter-chip.inactive {
+            background: #27272a;
+            color: #a1a1aa;
+            border-color: #3f3f46;
+        }
+        .filter-chip.inactive:hover {
+            background: #3f3f46;
+            color: #e4e4e7;
+            border-color: #52525b;
+        }
+        
+        /* OTT 플랫폼 버튼 스타일 */
+        .ott-btn {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .ott-btn.active {
+            border-color: #a78bfa !important;
+            background: rgba(167, 139, 250, 0.1);
+            transform: scale(1.05);
+        }
+        .ott-btn.inactive {
+            opacity: 0.6;
+        }
+        .ott-btn.inactive:hover {
+            opacity: 1;
+            border-color: #71717a;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header (홈 화면과 스타일 통일) -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-black border-b border-zinc-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-8">
+                    <a href="./02 홈화면_리뉴얼V12.html" class="hidden md:flex items-center gap-2 flex-shrink-0">
+                        <img src="./logo.svg" alt="MOA" class="h-5 w-auto">
+                    </a>
+                    <button class="md:hidden w-11 h-11 rounded-full hover:bg-zinc-800/50 flex items-center justify-center transition flex-shrink-0" onclick="window.location.href='./02 홈화면_리뉴얼V12.html'">
+                        <i class="fas fa-chevron-left text-base"></i>
+                    </button>
+                </div>
+                
+                <div class="hidden md:flex flex-1 justify-center px-8">
+                    <div class="relative w-full max-w-sm">
+                        <input type="text" value="분노" placeholder="작품, 인물, 컬렉션을 검색해보세요" class="w-full h-10 bg-zinc-800 border border-purple-500 rounded-lg pl-10 pr-4 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:border-purple-500 transition" onclick="window.location.href='./04 검색필드_리뉴얼v2.html'">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fas fa-search text-zinc-400 text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+                
+
+                <div class="flex items-center gap-3">
+                    <button class="w-11 h-11 rounded-full hover:bg-zinc-800/50 flex items-center justify-center transition flex-shrink-0">
+                        <i class="far fa-bell text-base"></i>
+                    </button>
+                    <button class="hidden md:flex w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 overflow-hidden flex-shrink-0" onclick="window.location.href='./08 마이페이지_리뉴얼V5.html'">
+                        <img src="./내 프로필 사진/profile.jpg" alt="profile" class="w-full h-full object-cover">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 모바일 검색 헤더 -->
+    <div class="md:hidden fixed top-0 left-0 right-0 z-50 bg-black border-b border-zinc-800">
+        <div class="h-16 flex items-center px-4 gap-3">
+            <button class="w-8 h-8 rounded-full hover:bg-zinc-800/50 flex items-center justify-center transition flex-shrink-0" onclick="window.location.href='./02 홈화면_리뉴얼V12.html'">
+                <i class="fas fa-chevron-left text-sm"></i>
+            </button>
+            <div class="relative w-full group">
+                <input type="text" value="분노" placeholder="작품, 인물, 컬렉션을 검색해보세요" class="w-full h-10 bg-zinc-800 border border-purple-500 rounded-lg pl-10 pr-10 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:border-purple-500 transition" onclick="window.location.href='./04 검색필드_리뉴얼v2.html'">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <i class="fas fa-search text-zinc-400 text-sm"></i>
+                </div>
+               <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                   <button class="w-8 h-8 rounded-full hover:bg-zinc-700/50 flex items-center justify-center transition">
+                       <i class="fas fa-times text-zinc-400 text-sm"></i>
+                   </button>
+               </div>
+            </div>
+            <button class="w-8 h-8 rounded-full hover:bg-zinc-800/50 flex items-center justify-center transition flex-shrink-0">
+                <i class="far fa-bell text-sm"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Area (홈 화면과 너비 통일) -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 md:mt-16">
+        <div class="flex lg:gap-8 relative">
+            <div id="filter-overlay" class="filter-overlay fixed inset-0 bg-black/60 z-[55] lg:hidden" onclick="toggleFilter()"></div>
+
+            <!-- Left Filter Sidebar -->
+            <aside id="filter-sidebar" class="w-72 xl:w-80 flex-shrink-0 fixed lg:sticky top-24 md:top-16 h-[calc(100vh-6rem)] md:h-[calc(100vh-4rem)] lg:h-auto -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-50 lg:z-30 hidden lg:block">
+                <div class="h-full bg-zinc-900/95 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none border-r border-zinc-800 lg:border-none">
+                    <div class="h-full overflow-y-auto no-scrollbar pt-6 lg:pt-12 pb-24 lg:pb-8">
+                        <div class="p-4 lg:p-0">
+                            <div class="bg-zinc-900/50 lg:bg-zinc-900 lg:gradient-border rounded-xl">
+                                <div class="p-5 border-b border-zinc-800">
+                                    <div class="flex justify-between items-center">
+                                        <h2 class="text-xl font-bold text-white">필터</h2>
+                                        <button class="text-sm font-semibold text-purple-400 hover:text-purple-300 transition-colors" onclick="resetFilters()">초기화</button>
+                                    </div>
+                                </div>
+                                <div class="p-5 space-y-1 divide-y divide-zinc-800">
+                                    <!-- Filter sections -->
+                                    <details class="group py-3" open><summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">OTT 플랫폼<i class="fa-solid fa-chevron-down group-open:rotate-180 transition-transform text-sm text-zinc-400"></i></summary>
+                                        <div class="mt-4 grid grid-cols-5 gap-3">
+                                            <button title="넷플릭스" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-purple-500/80 flex items-center justify-center transition-all p-1 active" data-platform="netflix"><img src="./모아_OTT_로고이미지/btn_squircle_netflix.png" class="w-full h-full object-cover rounded-lg"></button>
+                                            <button title="디즈니+" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-purple-500/80 flex items-center justify-center transition-all p-1 active" data-platform="disney"><img src="./모아_OTT_로고이미지/btn_squircle_disneyplus.png" class="w-full h-full object-cover rounded-lg"></button>
+                                            <button title="왓챠" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-purple-500/80 flex items-center justify-center transition-all p-1 active" data-platform="watcha"><img src="./모아_OTT_로고이미지/btn_squircle_watcha.png" class="w-full h-full object-cover rounded-lg"></button>
+                                            <button title="티빙" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-1 inactive" data-platform="tving"><img src="./모아_OTT_로고이미지/btn_squircle_tving.png" class="w-full h-full object-cover rounded-lg"></button>
+                                            <button title="쿠팡플레이" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-1 inactive" data-platform="coupang"><img src="./모아_OTT_로고이미지/btn_squircle_coupangplay.png" class="w-full h-full object-cover rounded-lg"></button>
+                                            <button title="웨이브" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-1 inactive" data-platform="wavve"><img src="./모아_OTT_로고이미지/btn_squircle_wavve.png" class="w-full h-full object-cover rounded-lg"></button>
+                                            <button title="Prime Video" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-1 inactive" data-platform="prime"><img src="./모아_OTT_로고이미지/btn_squircle_amazon.png" class="w-full h-full object-cover rounded-lg"></button>
+                                            <button title="Apple TV+" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-1 inactive" data-platform="apple"><img src="./모아_OTT_로고이미지/btn_squircle_appletv.png" class="w-full h-full object-cover rounded-lg"></button>
+                                            <button title="라프텔" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-1 inactive" data-platform="laftel"><img src="./모아_OTT_로고이미지/btn_squircle_laftel.png" class="w-full h-full object-cover rounded-lg"></button>
+                                            <button title="유튜브" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-1 inactive" data-platform="youtube"><img src="./모아_OTT_로고이미지/btn_squircle_youtube.svg" class="w-full h-full object-cover rounded-lg"></button>
+                                            <button title="씨네폭스" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-1 inactive" data-platform="cinefox"><img src="./모아_OTT_로고이미지/btn_squircle_cinefox.png" class="w-full h-full object-cover rounded-lg"></button>
+                                            <button title="U+모바일tv" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-1 inactive" data-platform="lguplus"><img src="./모아_OTT_로고이미지/btn_squircle_lguplus.png" class="w-full h-full object-cover rounded-lg"></button>
+                                        </div>
+                                    </details>
+                                    <details class="group py-3" open><summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">시청 방식<i class="fa-solid fa-chevron-down group-open:rotate-180 transition-transform text-sm text-zinc-400"></i></summary>
+                                        <div class="mt-4 grid grid-cols-2 gap-2">
+                                            <button class="filter-chip active" data-watch-type="subscription">구독</button>
+                                            <button class="filter-chip active" data-watch-type="free">무료</button>
+                                            <button class="filter-chip inactive" data-watch-type="rent">대여</button>
+                                            <button class="filter-chip inactive" data-watch-type="buy">구매</button>
+                                        </div>
+                                    </details>
+                                    <details class="group py-3" open><summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">예상 별점<i class="fa-solid fa-chevron-down group-open:rotate-180 transition-transform text-sm text-zinc-400"></i></summary>
+                                        <div class="mt-4 space-y-3 text-center">
+                                            <p class="text-sm text-zinc-400">최소 예상 별점 3.5점</p>
+                                            <div class="rating-container"><input type="radio" id="r10" name="review-rating" value="5"><label for="r10"><i class="fas fa-star"></i></label><input type="radio" id="r9" name="review-rating" value="4.5"><label for="r9"><i class="fas fa-star"></i></label><input type="radio" id="r8" name="review-rating" value="4"><label for="r8"><i class="fas fa-star"></i></label><input type="radio" id="r7" name="review-rating" value="3.5" checked><label for="r7"><i class="fas fa-star"></i></label><input type="radio" id="r6" name="review-rating" value="3"><label for="r6"><i class="fas fa-star"></i></label><input type="radio" id="r5" name="review-rating" value="2.5"><label for="r5"><i class="fas fa-star"></i></label><input type="radio" id="r4" name="review-rating" value="2"><label for="r4"><i class="fas fa-star"></i></label><input type="radio" id="r3" name="review-rating" value="1.5"><label for="r3"><i class="fas fa-star"></i></label><input type="radio" id="r2" name="review-rating" value="1"><label for="r2"><i class="fas fa-star"></i></label><input type="radio" id="r1" name="review-rating" value="0.5"><label for="r1"><i class="fas fa-star"></i></label></div>
+                                        </div>
+                                    </details>
+                                    <details class="group py-3"><summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">장르<i class="fa-solid fa-chevron-down group-open:rotate-180 transition-transform text-sm text-zinc-400"></i></summary>
+                                        <div class="mt-4 flex flex-wrap gap-2">
+                                            <button class="filter-chip inactive" data-genre="mystery">미스터리</button>
+                                            <button class="filter-chip inactive" data-genre="action">액션</button>
+                                            <button class="filter-chip inactive" data-genre="sci-fi">SF</button>
+                                            <button class="filter-chip inactive" data-genre="romance">로맨스</button>
+                                            <button class="filter-chip inactive" data-genre="comedy">코미디</button>
+                                            <button class="filter-chip inactive" data-genre="fantasy">판타지</button>
+                                            <button class="filter-chip inactive" data-genre="animation">애니메이션</button>
+                                            <button class="filter-chip inactive" data-genre="thriller">스릴러</button>
+                                            <button class="filter-chip inactive" data-genre="horror">공포</button>
+                                            <button class="filter-chip inactive" data-genre="drama">드라마</button>
+                                            <button class="filter-chip inactive" data-genre="crime">범죄</button>
+                                            <button class="filter-chip inactive" data-genre="adventure">모험</button>
+                                        </div>
+                                    </details>
+                                    <details class="group py-3"><summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">국가<i class="fa-solid fa-chevron-down group-open:rotate-180 transition-transform text-sm text-zinc-400"></i></summary>
+                                        <div class="mt-4 flex flex-wrap gap-2">
+                                            <button class="filter-chip inactive" data-country="korea">한국</button>
+                                            <button class="filter-chip inactive" data-country="usa">미국</button>
+                                            <button class="filter-chip inactive" data-country="japan">일본</button>
+                                            <button class="filter-chip inactive" data-country="uk">영국</button>
+                                            <button class="filter-chip inactive" data-country="china">중국</button>
+                                            <button class="filter-chip inactive" data-country="france">프랑스</button>
+                                            <button class="filter-chip inactive" data-country="germany">독일</button>
+                                            <button class="filter-chip inactive" data-country="spain">스페인</button>
+                                            <button class="filter-chip inactive" data-country="italy">이탈리아</button>
+                                            <button class="filter-chip inactive" data-country="canada">캐나다</button>
+                                            <button class="filter-chip inactive" data-country="australia">호주</button>
+                                            <button class="filter-chip inactive" data-country="india">인도</button>
+                                        </div>
+                                    </details>
+                                    <details class="group py-3"><summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">등급<i class="fa-solid fa-chevron-down group-open:rotate-180 transition-transform text-sm text-zinc-400"></i></summary>
+                                        <div class="mt-4 grid grid-cols-2 gap-2">
+                                            <button class="filter-chip active" data-rating="all">전체</button>
+                                            <button class="filter-chip inactive" data-rating="12">12세+</button>
+                                            <button class="filter-chip inactive" data-rating="15">15세+</button>
+                                            <button class="filter-chip inactive" data-rating="18">청불</button>
+                                        </div>
+                                    </details>
+                                    <details class="group py-3"><summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">공개 연도<i class="fa-solid fa-chevron-down group-open:rotate-180 transition-transform text-sm text-zinc-400"></i></summary>
+                                        <div class="mt-4 grid grid-cols-2 gap-2">
+                                            <button class="filter-chip active" data-year="2025">올해</button>
+                                            <button class="filter-chip inactive" data-year="2020s">2020년대</button>
+                                            <button class="filter-chip inactive" data-year="2010s">2010년대</button>
+                                            <button class="filter-chip inactive" data-year="2000s">2000년대</button>
+                                            <button class="filter-chip inactive" data-year="1990s">1990년대</button>
+                                            <button class="filter-chip inactive" data-year="1980s">1980년대</button>
+                                        </div>
+                                    </details>
+                                    <details class="group py-3"><summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">해외 평점<i class="fa-solid fa-chevron-down group-open:rotate-180 transition-transform text-sm text-zinc-400"></i></summary><div class="mt-4 space-y-4"><div><div class="flex justify-between items-center mb-2"><span class="text-sm flex items-center gap-1.5"><i class="fa-brands fa-rottentomatoes text-red-500"></i> 로튼 토마토</span><span id="rotten-value" class="text-sm font-semibold text-white">75+</span></div><input id="rotten-slider" type="range" min="0" max="100" value="75" oninput="updateSliderValue('rotten-slider', 'rotten-value', '+')"></div><div><div class="flex justify-between items-center mb-2"><span class="text-sm flex items-center gap-1.5"><i class="fa-brands fa-imdb text-yellow-400"></i> IMDB</span><span id="imdb-value" class="text-sm font-semibold text-white">8.0+</span></div><input id="imdb-slider" type="range" min="0" max="10" step="0.1" value="8" oninput="updateSliderValue('imdb-slider', 'imdb-value', '+')"></div></div></details>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 모바일/태블릿 필터 버튼 -->
+            <div class="fixed bottom-24 right-4 z-[60] lg:hidden">
+                <button onclick="toggleFilter()" class="mobile-filter-btn w-16 h-16 rounded-full flex items-center justify-center shadow-lg">
+                    <i class="fas fa-filter text-white text-xl"></i>
+                </button>
+            </div>
+
+            <!-- 모바일/태블릿 필터 시트 -->
+            <div id="mobile-filter-sheet" class="filter-sheet fixed inset-x-0 bottom-0 z-[60] bg-zinc-900 rounded-t-3xl lg:hidden max-h-[80vh] overflow-hidden">
+                <div class="sticky top-0 bg-zinc-900 border-b border-zinc-800 px-6 py-4 z-10">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold text-white">필터</h2>
+                        <div class="flex items-center gap-3">
+                            <button class="text-sm font-semibold text-purple-400 hover:text-purple-300 transition-colors" onclick="resetFilters()">초기화</button>
+                            <button onclick="toggleFilter()" class="w-8 h-8 rounded-full hover:bg-zinc-800 flex items-center justify-center transition">
+                                <i class="fas fa-times text-zinc-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto px-6 py-4 space-y-6" style="max-height: calc(80vh - 120px);">
+                    <!-- OTT 플랫폼 -->
+                    <div>
+                        <h3 class="font-semibold text-white mb-2 text-sm">OTT 플랫폼</h3>
+                        <div class="grid grid-cols-6 gap-3">
+                            <button title="넷플릭스" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-purple-500/80 flex items-center justify-center transition-all p-0.5 active" data-platform="netflix">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_netflix.png" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                            <button title="디즈니+" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-purple-500/80 flex items-center justify-center transition-all p-0.5 active" data-platform="disney">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_disneyplus.png" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                            <button title="왓챠" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-purple-500/80 flex items-center justify-center transition-all p-0.5 active" data-platform="watcha">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_watcha.png" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                            <button title="티빙" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-0.5 inactive" data-platform="tving">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_tving.png" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                            <button title="쿠팡플레이" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-0.5 inactive" data-platform="coupang">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_coupangplay.png" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                            <button title="웨이브" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-0.5 inactive" data-platform="wavve">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_wavve.png" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                            <button title="아마존 프라임" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-0.5 inactive" data-platform="amazon">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_amazon.png" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                            <button title="Apple TV+" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-0.5 inactive" data-platform="apple">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_appletv.png" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                            <button title="라프텔" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-0.5 inactive" data-platform="laftel">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_laftel.png" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                            <button title="유튜브" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-0.5 inactive" data-platform="youtube">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_youtube.svg" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                            <button title="씨네폭스" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-0.5 inactive" data-platform="cinefox">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_cinefox.png" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                            <button title="U+모바일tv" class="ott-btn aspect-square rounded-lg bg-zinc-800 border-2 border-transparent hover:border-zinc-700 opacity-60 hover:opacity-100 transition-all p-0.5 inactive" data-platform="lguplus">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_lguplus.png" class="w-full h-full object-cover rounded-lg">
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 시청 방식 -->
+                    <div>
+                        <h3 class="font-semibold text-white mb-2 text-sm">시청 방식</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-chip active" data-watch-type="subscription">구독</button>
+                            <button class="filter-chip active" data-watch-type="free">무료</button>
+                            <button class="filter-chip inactive" data-watch-type="rent">대여</button>
+                            <button class="filter-chip inactive" data-watch-type="buy">구매</button>
+                        </div>
+                    </div>
+
+                    <!-- 콘텐츠 유형 -->
+                    <div>
+                        <h3 class="font-semibold text-white mb-2 text-sm">콘텐츠 유형</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-chip active" data-content-type="movie">영화</button>
+                            <button class="filter-chip active" data-content-type="series">시리즈</button>
+                            <button class="filter-chip inactive" data-content-type="anime">애니메이션</button>
+                            <button class="filter-chip inactive" data-content-type="documentary">다큐</button>
+                        </div>
+                    </div>
+
+                    <!-- 장르 -->
+                    <div>
+                        <h3 class="font-semibold text-white mb-2 text-sm">장르</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-chip inactive" data-genre="action">액션</button>
+                            <button class="filter-chip inactive" data-genre="drama">드라마</button>
+                            <button class="filter-chip inactive" data-genre="comedy">코미디</button>
+                            <button class="filter-chip inactive" data-genre="thriller">스릴러</button>
+                            <button class="filter-chip inactive" data-genre="sf">SF</button>
+                            <button class="filter-chip inactive" data-genre="romance">로맨스</button>
+                            <button class="filter-chip inactive" data-genre="horror">공포</button>
+                            <button class="filter-chip inactive" data-genre="fantasy">판타지</button>
+                            <button class="filter-chip inactive" data-genre="animation">애니메이션</button>
+                            <button class="filter-chip inactive" data-genre="crime">범죄</button>
+                        </div>
+                    </div>
+
+                    <!-- 국가 -->
+                    <div>
+                        <h3 class="font-semibold text-white mb-2 text-sm">국가</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-chip inactive" data-country="korea">한국</button>
+                            <button class="filter-chip inactive" data-country="usa">미국</button>
+                            <button class="filter-chip inactive" data-country="japan">일본</button>
+                            <button class="filter-chip inactive" data-country="uk">영국</button>
+                            <button class="filter-chip inactive" data-country="china">중국</button>
+                            <button class="filter-chip inactive" data-country="france">프랑스</button>
+                        </div>
+                    </div>
+
+                    <!-- 등급 -->
+                    <div>
+                        <h3 class="font-semibold text-white mb-2 text-sm">등급</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-chip active" data-rating="all">전체</button>
+                            <button class="filter-chip inactive" data-rating="12">12세+</button>
+                            <button class="filter-chip inactive" data-rating="15">15세+</button>
+                            <button class="filter-chip inactive" data-rating="18">청불</button>
+                        </div>
+                    </div>
+
+                    <!-- 공개 연도 -->
+                    <div class="pb-4">
+                        <h3 class="font-semibold text-white mb-2 text-sm">공개 연도</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-chip active" data-year="2025">올해</button>
+                            <button class="filter-chip inactive" data-year="2020s">2020년대</button>
+                            <button class="filter-chip inactive" data-year="2010s">2010년대</button>
+                            <button class="filter-chip inactive" data-year="2000s">2000년대</button>
+                            <button class="filter-chip inactive" data-year="1990s">1990년대</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 적용 버튼 -->
+                <div class="sticky bottom-0 bg-zinc-900 border-t border-zinc-800 px-6 py-4">
+                    <button onclick="applyFilters()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold text-base hover:opacity-90 transition">
+                        결과 보기
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Search Results Area -->
+            <div class="flex-1 min-w-0 py-6 lg:py-12">
+                <div class="border-b border-zinc-800">
+                    <nav class="-mb-px flex gap-6 overflow-x-auto no-scrollbar">
+                        <a href="#" class="flex-1 md:flex-none shrink-0 border-b-2 border-purple-300 px-1 py-3 text-base md:text-lg font-semibold text-purple-300 text-center">콘텐츠</a>
+                        <a href="#" class="flex-1 md:flex-none shrink-0 border-b-2 border-transparent px-1 py-3 text-base md:text-lg font-semibold text-zinc-500 hover:border-zinc-500 hover:text-zinc-400 transition text-center">인물</a>
+                        <a href="#" class="flex-1 md:flex-none shrink-0 border-b-2 border-transparent px-1 py-3 text-base md:text-lg font-semibold text-zinc-500 hover:border-zinc-500 hover:text-zinc-400 transition text-center">컬렉션</a>
+                    </nav>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-4 my-6">
+                    <div class="flex items-center gap-4">
+                        <p class="text-base text-zinc-400">'<span class="text-white font-semibold">분노</span>' 검색 결과 <span class="text-white font-semibold">128</span>개</p>
+                        <button onclick="toggleFilter()" class="hidden md:flex lg:hidden items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm font-medium text-white hover:bg-zinc-700 transition">
+                            <i class="fas fa-filter text-sm"></i>
+                            <span>필터</span>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <select class="bg-zinc-900 border border-zinc-800 rounded-lg py-2 pl-3 pr-8 text-sm text-white focus:outline-none focus:border-purple-500 transition h-10 appearance-none">
+                            <option>관련도순</option>
+                            <option>인기순</option>
+                            <option>평점순</option>
+                            <option>최신순</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                            <i class="fas fa-chevron-down text-zinc-500 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-2 mb-8">
+                    <button class="h-9 px-3 pl-4 rounded-full bg-zinc-800 text-zinc-300 text-sm font-semibold flex items-center gap-1 border border-zinc-700 transition hover:border-zinc-600">
+                        <span>영화</span>
+                        <div class="h-6 w-6 rounded-full bg-zinc-700 hover:bg-zinc-600 text-zinc-400 text-xs flex items-center justify-center transition cursor-pointer">×</div>
+                    </button>
+                    <button class="h-9 px-3 pl-4 rounded-full bg-zinc-800 text-zinc-300 text-sm font-semibold flex items-center gap-1 border border-zinc-700 transition hover:border-zinc-600">
+                        <span>시리즈</span>
+                        <div class="h-6 w-6 rounded-full bg-zinc-700 hover:bg-zinc-600 text-zinc-400 text-xs flex items-center justify-center transition cursor-pointer">×</div>
+                    </button>
+                    <button class="h-9 px-3 pl-4 rounded-full bg-zinc-800 text-zinc-300 text-sm font-semibold flex items-center gap-1 border border-zinc-700 transition hover:border-zinc-600">
+                        <span>구독</span>
+                        <div class="h-6 w-6 rounded-full bg-zinc-700 hover:bg-zinc-600 text-zinc-400 text-xs flex items-center justify-center transition cursor-pointer">×</div>
+                    </button>
+                    <button class="h-9 px-3 pl-4 rounded-full bg-zinc-800 text-zinc-300 text-sm font-semibold flex items-center gap-1 border border-zinc-700 transition hover:border-zinc-600">
+                        <span>무료</span>
+                        <div class="h-6 w-6 rounded-full bg-zinc-700 hover:bg-zinc-600 text-zinc-400 text-xs flex items-center justify-center transition cursor-pointer">×</div>
+                    </button>
+                    <button class="h-9 px-3 pl-4 rounded-full bg-zinc-800 text-zinc-300 text-sm font-semibold flex items-center gap-1 border border-zinc-700 transition hover:border-zinc-600">
+                        <span>별점 3.5+</span>
+                        <div class="h-6 w-6 rounded-full bg-zinc-700 hover:bg-zinc-600 text-zinc-400 text-xs flex items-center justify-center transition cursor-pointer">×</div>
+                    </button>
+                </div>
+
+                <!-- Content Sections -->
+                <div class="space-y-16">
+                    <!-- Movies Section -->
+                    <section>
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-white">영화 (45개)</h2>
+                            <a href="#" class="text-base font-medium text-zinc-400 hover:text-white transition whitespace-nowrap">
+                                더보기
+                            </a>
+                        </div>
+                        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8">
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/1.1_분노.webp" alt="분노" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">분노</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2019 · 베트남</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">3.9</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/1.2_캐시트럭.webp" alt="캐시트럭: 그 남자의 분노" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">캐시트럭: 그 남자의 분노</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2021 · 영국/미국</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">3.8</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/1.3_분노의 질주.webp" alt="분노의 질주: 더 얼티메이트" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">분노의 질주: 더 얼티메이트</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2020 · 미국</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">4.1</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/1.4_분노의 추격자.webp" alt="분노의 추격자" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">분노의 추격자</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2022 · 미국</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">3.7</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/1.5_분노의질주.webp" alt="분노의 질주: 홉스&쇼" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">분노의 질주: 홉스&쇼</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2019 · 미국</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">3.9</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/1.6_분노의질주_2001.webp" alt="분노의 질주" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">분노의 질주</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2001 · 미국</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">4.2</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                        </div>
+                    </section>
+                    <!-- Series Section -->
+                    <section>
+                       <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-white">시리즈 (83개)</h2>
+                            <a href="#" class="text-base font-medium text-zinc-400 hover:text-white transition whitespace-nowrap">
+                                더보기
+                            </a>
+                        </div>
+                        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8">
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/2.1_분노의질주스파이.webp" alt="분노의 질주: 스파이 레이서 시즌 6: 홈커밍" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">분노의 질주: 스파이 레이서 시즌 6: 홈커밍</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2021 · Netflix</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">3.8</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/2.4_분노의질주남태평양.webp" alt="분노의 질주: 스파이 레이서: 남태평양" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">분노의 질주: 스파이 레이서: 남태평양</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2021 · Netflix</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">3.9</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/2.3_분노의질주멕시코.webp" alt="분노의 질주: 스파이 레이서: 멕시코" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">분노의 질주: 스파이 레이서: 멕시코</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2021 · Netflix</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">3.7</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/2.45_분노의질주사하라.webp" alt="분노의 질주: 스파이 레이서: 사하라" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">분노의 질주: 스파이 레이서: 사하라</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2020 · Netflix</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">3.6</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/2.5_분노의질주리오.webp" alt="분노의 질주: 스파이 레이서: 리오" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">분노의 질주: 스파이 레이서: 리오</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2020 · Netflix</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">3.8</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                            <a href="#" class="group flex flex-col h-full"><div class="aspect-[2/3] rounded-xl overflow-hidden mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition relative"><img src="./반응형_모아_검색결과_리뉴얼 이미지/2.6_분노의질주시즌1.webp" alt="분노의 질주: 스파이 레이서 시즌 1" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div><div class="flex flex-col flex-grow mt-1"><p class="font-bold text-white text-base leading-snug line-clamp-2">분노의 질주: 스파이 레이서 시즌 1</p><div class="mt-auto pt-2"><p class="text-sm text-zinc-400">2019 · Netflix</p><div class="flex items-center gap-1.5 mt-1"><i class="fas fa-star text-zinc-400 text-sm"></i><span class="text-sm font-medium text-zinc-300">4.0</span><span class="text-xs text-zinc-500 ml-1.5">평균</span></div></div></div></a>
+                        </div>
+                    </section>
+                </div>
+
+                <nav class="flex items-center justify-center gap-2 mt-24">
+                    <button class="h-9 w-9 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-500 transition-colors hover:border-zinc-700 hover:text-white flex items-center justify-center" aria-label="Previous Page">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                    <button class="h-9 w-9 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold flex items-center justify-center" aria-current="page">1</button>
+                    <button class="h-9 w-9 rounded-lg bg-zinc-900 text-zinc-400 transition-colors hover:bg-zinc-800 flex items-center justify-center">2</button>
+                    <button class="h-9 w-9 rounded-lg bg-zinc-900 text-zinc-400 transition-colors hover:bg-zinc-800 flex items-center justify-center">3</button>
+                    <span class="text-zinc-500 px-2">...</span>
+                    <button class="h-9 w-9 rounded-lg bg-zinc-900 text-zinc-400 transition-colors hover:bg-zinc-800 flex items-center justify-center">10</button>
+                    <button class="h-9 w-9 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-500 transition-colors hover:border-zinc-700 hover:text-white flex items-center justify-center" aria-label="Next Page">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-md border-t border-zinc-800 md:hidden z-50">
+        <div class="flex items-center justify-around h-16 py-2">
+            <a href="./02 홈화면_리뉴얼V12.html" class="flex flex-col items-center gap-1 text-zinc-500">
+                <i class="fas fa-home text-lg"></i>
+                <span class="text-xs">홈</span>
+            </a>
+            <a href="./04 검색필드_리뉴얼v2.html" class="flex flex-col items-center gap-1 text-white">
+                <i class="fas fa-search text-base"></i>
+                <span class="text-xs">검색</span>
+            </a>
+            <a href="./08 마이페이지_리뉴얼V5.html" class="flex flex-col items-center gap-1 text-zinc-500">
+                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 overflow-hidden">
+                    <img src="./내 프로필 사진/profile.jpg" alt="profile" class="w-full h-full object-cover">
+                </div>
+                <span class="text-xs">MY</span>
+            </a>
+        </div>
+    </nav>
+    <div class="h-20 md:hidden"></div>
+
+    <script>
+        // 필터 상태 관리
+        let activeFilters = {
+            platforms: ['netflix', 'disney'],
+            watchTypes: ['subscription', 'free'],
+            contentTypes: ['movie', 'series'],
+            genres: [],
+            countries: [],
+            rating: 'all',
+            year: '2025',
+            minRating: 3.5,
+            rottenScore: 75,
+            imdbScore: 8.0
+        };
+
+        function toggleFilter() {
+            const sheet = document.getElementById('mobile-filter-sheet');
+            const overlay = document.getElementById('filter-overlay');
+            const sidebar = document.getElementById('filter-sidebar');
+            
+            // 화면 크기에 따른 처리
+            if (window.innerWidth < 1024) {
+                // 모바일/태블릿: 시트 사용
+                if (sheet) {
+                    sheet.classList.toggle('active');
+                }
+                if (overlay) {
+                    overlay.classList.toggle('active');
+                }
+                
+                // 바디 스크롤 제어
+                const isOpen = sheet ? sheet.classList.contains('active') : false;
+                document.body.style.overflow = isOpen ? 'hidden' : '';
+                document.documentElement.style.overflow = isOpen ? 'hidden' : '';
+            } else {
+                // 데스크톱: 사이드바 사용
+                if (sidebar) {
+                    sidebar.classList.toggle('mobile-filter-open');
+                }
+            }
+        }
+
+        function updateSliderValue(sliderId, valueId, suffix = '') {
+            const slider = document.getElementById(sliderId);
+            const valueSpan = document.getElementById(valueId);
+            let displayValue = slider.value;
+            if (sliderId.includes('imdb')) {
+                displayValue = parseFloat(slider.value).toFixed(1);
+            }
+            valueSpan.textContent = `${displayValue}${suffix}`;
+            
+            // 필터 상태 업데이트
+            if (sliderId === 'rotten-slider') {
+                activeFilters.rottenScore = parseInt(slider.value);
+            } else if (sliderId === 'imdb-slider') {
+                activeFilters.imdbScore = parseFloat(slider.value);
+            }
+            applyFilters();
+        }
+
+        // OTT 플랫폼 필터 토글
+        function togglePlatform(button) {
+            const platform = button.dataset.platform;
+            const isActive = button.classList.contains('active');
+            
+            if (isActive) {
+                button.classList.remove('active');
+                button.classList.add('inactive');
+                activeFilters.platforms = activeFilters.platforms.filter(p => p !== platform);
+            } else {
+                button.classList.remove('inactive');
+                button.classList.add('active');
+                activeFilters.platforms.push(platform);
+            }
+            applyFilters();
+        }
+
+        // 필터 칩 토글
+        function toggleFilterChip(button, filterType) {
+            const value = button.dataset[filterType];
+            const isActive = button.classList.contains('active');
+            
+            if (isActive) {
+                button.classList.remove('active');
+                button.classList.add('inactive');
+                if (Array.isArray(activeFilters[filterType])) {
+                    activeFilters[filterType] = activeFilters[filterType].filter(item => item !== value);
+                }
+            } else {
+                button.classList.remove('inactive');
+                button.classList.add('active');
+                if (Array.isArray(activeFilters[filterType])) {
+                    activeFilters[filterType].push(value);
+                } else {
+                    activeFilters[filterType] = value;
+                }
+            }
+            applyFilters();
+        }
+
+        // 필터 적용
+        function applyFilters() {
+            console.log('Active filters:', activeFilters);
+            updateFilterChips();
+            toggleFilter(); // 필터 시트 닫기
+            // 여기서 실제 검색 결과를 필터링하는 로직을 구현할 수 있습니다
+        }
+
+        // 필터 칩 업데이트
+        function updateFilterChips() {
+            const chipContainer = document.querySelector('.flex.flex-wrap.items-center.gap-2.mb-8');
+            if (!chipContainer) return;
+
+            // 기존 칩들 제거 (검색어 제외)
+            const existingChips = chipContainer.querySelectorAll('button');
+            existingChips.forEach(chip => {
+                if (!chip.textContent.includes('분노')) {
+                    chip.remove();
+                }
+            });
+
+            // 활성 필터에 따른 칩 추가
+            if (activeFilters.platforms.length > 0) {
+                activeFilters.platforms.forEach(platform => {
+                    const platformNames = {
+                        'netflix': '넷플릭스',
+                        'disney': '디즈니+',
+                        'watcha': '왓챠',
+                        'tving': '티빙',
+                        'coupang': '쿠팡플레이',
+                        'wavve': '웨이브',
+                        'prime': 'Prime Video',
+                        'apple': 'Apple TV+',
+                        'laftel': '라프텔',
+                        'youtube': '유튜브'
+                    };
+                    addFilterChip(platformNames[platform], 'platform', platform);
+                });
+            }
+
+            if (activeFilters.watchTypes.length > 0) {
+                activeFilters.watchTypes.forEach(type => {
+                    const typeNames = {
+                        'subscription': '구독',
+                        'free': '무료',
+                        'rent': '대여',
+                        'buy': '구매'
+                    };
+                    addFilterChip(typeNames[type], 'watchType', type);
+                });
+            }
+
+            if (activeFilters.contentTypes.length > 0) {
+                activeFilters.contentTypes.forEach(type => {
+                    const typeNames = {
+                        'movie': '영화',
+                        'series': '시리즈',
+                        'animation': '애니메이션',
+                        'variety': '예능',
+                        'documentary': '시사/교양',
+                        'performance': '공연'
+                    };
+                    addFilterChip(typeNames[type], 'contentType', type);
+                });
+            }
+
+            if (activeFilters.genres.length > 0) {
+                activeFilters.genres.forEach(genre => {
+                    addFilterChip(genre, 'genre', genre);
+                });
+            }
+
+            if (activeFilters.countries.length > 0) {
+                activeFilters.countries.forEach(country => {
+                    addFilterChip(country, 'country', country);
+                });
+            }
+
+            if (activeFilters.rating !== 'all') {
+                addFilterChip(activeFilters.rating + '세+', 'rating', activeFilters.rating);
+            }
+
+            if (activeFilters.year !== '2025') {
+                addFilterChip(activeFilters.year, 'year', activeFilters.year);
+            }
+
+            if (activeFilters.minRating > 0) {
+                addFilterChip('별점 ' + activeFilters.minRating + '+', 'minRating', activeFilters.minRating);
+            }
+        }
+
+        // 필터 칩 추가
+        function addFilterChip(text, type, value) {
+            const chipContainer = document.querySelector('.flex.flex-wrap.items-center.gap-2.mb-8');
+            const chip = document.createElement('button');
+            chip.className = 'h-9 px-3 pl-4 rounded-full bg-zinc-800 text-zinc-300 text-sm font-semibold flex items-center gap-1 border border-zinc-700 transition hover:border-zinc-600';
+            chip.innerHTML = `
+                <span>${text}</span>
+                <div class="h-6 w-6 rounded-full bg-zinc-700 hover:bg-zinc-600 text-zinc-400 text-xs flex items-center justify-center transition cursor-pointer" onclick="removeFilterChip(this, '${type}', '${value}')">×</div>
+            `;
+            chipContainer.appendChild(chip);
+        }
+
+        // 필터 칩 제거
+        function removeFilterChip(element, type, value) {
+            element.closest('button').remove();
+            
+            if (Array.isArray(activeFilters[type])) {
+                activeFilters[type] = activeFilters[type].filter(item => item !== value);
+            } else {
+                activeFilters[type] = type === 'rating' ? 'all' : type === 'year' ? '2025' : 0;
+            }
+            
+            // UI 업데이트
+            updateFilterUI();
+            applyFilters();
+        }
+
+        // 필터 UI 업데이트
+        function updateFilterUI() {
+            // OTT 플랫폼 버튼 업데이트
+            document.querySelectorAll('.ott-btn').forEach(btn => {
+                const platform = btn.dataset.platform;
+                if (activeFilters.platforms.includes(platform)) {
+                    btn.classList.remove('inactive');
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                    btn.classList.add('inactive');
+                }
+            });
+
+            // 필터 칩들 업데이트
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                const filterType = Object.keys(chip.dataset)[0];
+                const value = chip.dataset[filterType];
+                
+                if (Array.isArray(activeFilters[filterType])) {
+                    if (activeFilters[filterType].includes(value)) {
+                        chip.classList.remove('inactive');
+                        chip.classList.add('active');
+                    } else {
+                        chip.classList.remove('active');
+                        chip.classList.add('inactive');
+                    }
+                } else {
+                    if (activeFilters[filterType] === value) {
+                        chip.classList.remove('inactive');
+                        chip.classList.add('active');
+                    } else {
+                        chip.classList.remove('active');
+                        chip.classList.add('inactive');
+                    }
+                }
+            });
+        }
+
+        // 필터 초기화
+        function resetFilters() {
+            activeFilters = {
+                platforms: [],
+                watchTypes: [],
+                contentTypes: [],
+                genres: [],
+                countries: [],
+                rating: 'all',
+                year: '2025',
+                minRating: 0,
+                rottenScore: 0,
+                imdbScore: 0
+            };
+            
+            // 슬라이더 초기화
+            document.getElementById('rotten-slider').value = 0;
+            document.getElementById('imdb-slider').value = 0;
+            updateSliderValue('rotten-slider', 'rotten-value', '+');
+            updateSliderValue('imdb-slider', 'imdb-value', '+');
+            
+            // UI 초기화
+            document.querySelectorAll('.ott-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('inactive');
+            });
+            
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+                chip.classList.add('inactive');
+            });
+            
+            // 필터 칩들 제거
+            const chipContainer = document.querySelector('.flex.flex-wrap.items-center.gap-2.mb-8');
+            const existingChips = chipContainer.querySelectorAll('button');
+            existingChips.forEach(chip => {
+                if (!chip.textContent.includes('분노')) {
+                    chip.remove();
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSliderValue('rotten-slider', 'rotten-value', '+');
+            updateSliderValue('imdb-slider', 'imdb-value', '+');
+            
+            // OTT 플랫폼 버튼 이벤트 리스너 (데스크톱 + 모바일)
+            document.querySelectorAll('.ott-btn').forEach(btn => {
+                btn.addEventListener('click', () => togglePlatform(btn));
+            });
+            
+            // 필터 칩 이벤트 리스너 (데스크톱 + 모바일)
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                const filterType = Object.keys(chip.dataset)[0];
+                chip.addEventListener('click', () => toggleFilterChip(chip, filterType));
+            });
+            
+            // 초기화 버튼 이벤트 리스너
+            document.querySelector('button[onclick="resetFilters()"]')?.addEventListener('click', resetFilters);
+            
+            // 오버레이 클릭 시 필터 닫기
+            document.getElementById('filter-overlay')?.addEventListener('click', function() {
+                if (this.classList.contains('active')) {
+                    toggleFilter();
+                }
+            });
+        });
+    </script>
+
+    <!-- ===== 최적 푸터 시작 ===== -->
+    <footer class="border-t border-zinc-800/50 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <!-- 평가 카운트 - improved 버전의 배지 디자인 -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900/50 rounded-xl border border-zinc-800">
+                    <i class="fas fa-star text-purple-400 text-base"></i>
+                    <span class="text-sm text-zinc-300">지금까지</span>
+                    <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">647,152,894</span>
+                    <span class="text-sm text-zinc-300">개의 평가가 쌓였어요</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row justify-between gap-8">
+                <!-- 왼쪽 정보 영역 -->
+                <div class="space-y-4 flex-1">
+                    <!-- 상단 약관 링크 -->
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">서비스 이용약관</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">개인정보 처리방침</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">회사 안내</a>
+                    </div>
+
+                    <!-- 문의 정보 -->
+                    <div class="space-y-1.5 text-xs text-zinc-500">
+                        <div>
+                            <span>고객센터</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:cs@moa.com" class="hover:text-purple-400 transition">cs@moa.com</a>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <span>02-123-4567</span>
+                        </div>
+                        <div>
+                            <span>광고 문의</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:ad@moa.com" class="hover:text-purple-400 transition">ad@moa.com</a>
+                        </div>
+                        <div>
+                            <span>제휴 및 대외 협력</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="https://moa.team/contact" class="hover:text-purple-400 transition">moa.team/contact</a>
+                        </div>
+                    </div>
+
+                    <!-- 회사 정보 & 저작권 -->
+                    <div class="space-y-1.5">
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-600">
+                            <span>(주)모아</span>
+                            <span>•</span>
+                            <span>대표 김모아</span>
+                            <span>•</span>
+                            <span>사업자등록번호 123-45-67890</span>
+                            <span>•</span>
+                            <span>서울시 강남구 테헤란로 417</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 오른쪽 언어 & 소셜 영역 -->
+                <div class="flex flex-col items-start lg:items-end gap-4 lg:gap-6">
+                    <!-- 언어 선택 -->
+                    <div class="relative">
+                        <select class="appearance-none bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 hover:bg-zinc-800 transition-all cursor-pointer pr-10 font-medium">
+                            <option value="ko" selected>한국어</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                        </select>
+                        <i class="fas fa-chevron-down text-xs text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                    
+                    <!-- 소셜 아이콘 -->
+                    <div class="flex items-center gap-3">
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-purple-500/10 border border-zinc-700/50 hover:border-purple-500/50 flex items-center justify-center transition-all group" aria-label="Facebook">
+                            <i class="fa-brands fa-facebook text-base text-zinc-400 group-hover:text-purple-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-indigo-500/10 border border-zinc-700/50 hover:border-indigo-500/50 flex items-center justify-center transition-all group" aria-label="Twitter">
+                            <i class="fa-brands fa-twitter text-base text-zinc-400 group-hover:text-indigo-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-pink-500/10 border border-zinc-700/50 hover:border-pink-500/50 flex items-center justify-center transition-all group" aria-label="Instagram">
+                            <i class="fa-brands fa-instagram text-base text-zinc-400 group-hover:text-pink-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-red-500/10 border border-zinc-700/50 hover:border-red-500/50 flex items-center justify-center transition-all group" aria-label="YouTube">
+                            <i class="fa-brands fa-youtube text-base text-zinc-400 group-hover:text-red-400 transition-colors"></i>
+                        </a>
+                    </div>
+
+                    <!-- 저작권 - 우측 하단 -->
+                    <div class="text-xs text-zinc-600 whitespace-nowrap">
+                        © 2025 MOA, Inc. All rights reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- ===== 최적 푸터 끝 ===== -->
+</body>
+</html>
+

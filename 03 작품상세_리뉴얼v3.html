@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>추격자 - MOA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { 
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: linear-gradient(180deg, #000 0%, #0a0514 50%, #000 100%);
+            color: #e5e5e5;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.02em;
+        }
+        .hero-gradient { background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 60%, #000 100%); }
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-border {
+            border: 1px solid transparent;
+            background: linear-gradient(#1f1f23, #1f1f23) padding-box, linear-gradient(135deg, #a78bfa40, #818cf840) border-box;
+        }
+        .gradient-bg { background: linear-gradient(135deg, #a78bfa20 0%, #818cf820 100%); }
+        .rating-container {
+            display: inline-flex;
+            direction: rtl;
+            position: relative;
+        }
+        .rating-container input { display: none; }
+        .rating-container label {
+            cursor: pointer;
+            width: 0.75rem;
+            height: 1.5rem;
+            line-height: 1.5rem;
+            font-size: 1.5rem;
+            color: #404040;
+            overflow: hidden;
+            transition: color 0.15s ease-in-out;
+            position: relative;
+        }
+        .rating-container label i {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1.5rem;
+            text-align: center;
+        }
+        .rating-container label:nth-of-type(odd) i { left: -0.75rem; }
+        /* 리뷰 작성하기 별점 크기 */
+        .review-rating-container label {
+            width: 1rem;
+            height: 2rem;
+            line-height: 2rem;
+            font-size: 2rem;
+        }
+        .review-rating-container label i {
+            width: 2rem;
+        }
+        .review-rating-container label:nth-of-type(odd) i { left: -1rem; }
+        .rating-container input:checked ~ label,
+        .rating-container label:hover,
+        .rating-container label:hover ~ label { color: #a78bfa; }
+        @media (max-width: 768px) {
+            footer { display: none !important; }
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        /* Tab Styles */
+        .tab-button {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-button.active {
+            color: #fff;
+            border-bottom-color: #8b5cf6;
+        }
+        .tab-button.active .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+    </style>
+</head>
+<body>
+    <header class="fixed top-0 left-0 right-0 z-50 bg-transparent md:bg-black border-b border-zinc-800" id="main-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center h-16 relative">
+                <div class="flex items-center gap-8">
+                    <a href="./02 홈화면_리뉴얼V12.html" class="hidden md:flex items-center gap-2 flex-shrink-0">
+                        <img src="./logo.svg" alt="MOA" class="h-5 w-auto">
+                    </a>
+                    <button class="md:hidden w-11 h-11 rounded-full hover:bg-zinc-800/50 flex items-center justify-center transition flex-shrink-0" onclick="window.location.href='./02 홈화면_리뉴얼V12.html'">
+                        <i class="fas fa-chevron-left text-base"></i>
+                    </button>
+                </div>
+                <!-- 모바일 제목 전체 width 기준 가운데 정렬 -->
+                <div class="md:hidden absolute left-1/2 transform -translate-x-1/2">
+                    <span class="text-white font-bold text-lg opacity-0 transition-opacity duration-300" id="mobile-title">추격자</span>
+                </div>
+                <div class="hidden md:flex flex-1 justify-center px-8">
+                    <div class="relative w-full max-w-sm">
+                        <input type="text" placeholder="작품, 인물, 컬렉션을 검색해보세요" class="w-full h-10 bg-zinc-800 border border-zinc-600/50 rounded-lg pl-10 pr-4 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:border-purple-500 transition" onclick="window.location.href='./04 검색필드_리뉴얼v2.html'">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fas fa-search text-zinc-400 text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 ml-auto">
+                    <button class="md:hidden w-11 h-11 rounded-full hover:bg-zinc-800/50 flex items-center justify-center transition flex-shrink-0">
+                        <i class="fas fa-share-nodes text-base"></i>
+                    </button>
+                    <button class="w-11 h-11 rounded-full hover:bg-zinc-800/50 flex items-center justify-center transition flex-shrink-0">
+                        <i class="far fa-bell text-base"></i>
+                    </button>
+                    <button class="hidden md:flex w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 overflow-hidden flex-shrink-0" onclick="window.location.href='./08 마이페이지_리뉴얼V5.html'"><img src="./내 프로필 사진/profile.jpg" alt="profile" class="w-full h-full object-cover"></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="relative h-[70vh] md:h-[85vh] min-h-[500px] md:min-h-[600px] overflow-hidden">
+        <img src="./반응형_모아_작품상세_리뉴얼v3/1_1. 추격자 메인.jpeg" alt="hero" class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 hero-gradient"></div>
+        <div class="absolute inset-0 flex items-end">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
+                <div class="max-w-4xl">
+                    <div class="mb-4">
+                        <img src="./반응형_모아_작품상세_리뉴얼v3/추격자_타이포로고.png" alt="추격자" class="h-20 sm:h-28 lg:h-32 object-contain" style="filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));">
+                    </div>
+                    <p class="text-lg text-zinc-300 mb-6">2008 · 스릴러 · 123분 · 청소년 관람불가</p>
+                    
+                    <div class="flex flex-wrap items-center gap-6 mb-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <span class="text-2xl font-bold text-white">4.6</span>
+                            <span class="text-zinc-400 text-sm">(45.1K)</span>
+                        </div>
+                        <div class="w-px h-6 bg-zinc-700"></div>
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-star gradient-text"></i>
+                            <span class="text-2xl font-bold text-white">4.8</span>
+                            <span class="text-zinc-400 text-sm">예상 별점</span>
+                        </div>
+                        <div class="w-px h-6 bg-zinc-700"></div>
+                        <div class="flex items-center gap-3 py-2">
+                            <span class="text-sm text-zinc-400">내 평점</span>
+                            <div class="rating-container" id="hero-rating-container">
+                                <input type="radio" id="s10" name="hero-rating" value="5"><label for="s10"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="s9" name="hero-rating" value="4.5"><label for="s9"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="s8" name="hero-rating" value="4"><label for="s8"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="s7" name="hero-rating" value="3.5"><label for="s7"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="s6" name="hero-rating" value="3"><label for="s6"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="s5" name="hero-rating" value="2.5"><label for="s5"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="s4" name="hero-rating" value="2"><label for="s4"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="s3" name="hero-rating" value="1.5"><label for="s3"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="s2" name="hero-rating" value="1"><label for="s2"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="s1" name="hero-rating" value="0.5"><label for="s1"><i class="fas fa-star"></i></label>
+                            </div>
+                             <span id="hero-rating-display" class="text-lg font-bold text-white ml-3 w-16"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-8 max-w-2xl">
+                        <p class="text-zinc-400 leading-relaxed" id="plot-text">
+                            출장안마소를 운영하는 전직 형사 중호, 최근 데리고 있던 여자들이 잇달아 사라지는 일이 발생하고, 조금 전 나간 미진을 불러낸 손님의 전화 번호와 사라진 여자들이 마지막으로 통화한 번호가 일치함을 알아낸다. 하지만 미진 마저도 연락이 두절되고…… 미진을 찾아 헤매던 중.. <button id="plot-toggle" class="text-purple-400 hover:text-purple-300 text-sm font-medium transition inline">더보기 <i class="fas fa-chevron-down text-xs ml-1"></i></button>
+                    </p>
+                        <p class="text-zinc-400 leading-relaxed hidden" id="plot-full">
+                            출장안마소를 운영하는 전직 형사 중호, 최근 데리고 있던 여자들이 잇달아 사라지는 일이 발생하고, 조금 전 나간 미진을 불러낸 손님의 전화 번호와 사라진 여자들이 마지막으로 통화한 번호가 일치함을 알아낸다. 하지만 미진 마저도 연락이 두절되고…… 미진을 찾아 헤매던 중 우연히 옷에 피가 묻은 영민과 마주치고, 추격 끝에 그를 붙잡는다. 실종된 여자들을 모두 죽였다는 충격적인 고백을 담담히 털어놓는 영민에 의해 경찰서는 발칵 뒤집어진다. 공세우기에 혈안이 된 경찰은 미진의 생사보다는 증거를 찾기에만 급급해 하고, 미진이 살아 있다고 믿는 단 한 사람인 중호는 미진을 찾아 나서는데... <button id="plot-toggle-full" class="text-purple-400 hover:text-purple-300 text-sm font-medium transition inline">접기 <i class="fas fa-chevron-up text-xs ml-1"></i></button>
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <button class="px-6 h-12 bg-zinc-900 border border-zinc-700 rounded-lg font-medium hover:bg-zinc-800 transition flex items-center gap-2 text-white group">
+                            <i class="far fa-heart transition-transform group-hover:scale-110"></i>
+                            보고싶어요
+                        </button>
+                        <button class="px-6 h-12 bg-zinc-900 border border-zinc-700 rounded-lg font-medium hover:bg-zinc-800 transition flex items-center gap-2 text-white group">
+                            <i class="fas fa-eye transition-transform group-hover:scale-110"></i>
+                            보는 중
+                        </button>
+                        <button class="px-6 h-12 bg-zinc-900 border border-zinc-700 rounded-lg font-medium hover:bg-zinc-800 transition flex items-center gap-2 text-white group">
+                            <i class="far fa-bookmark transition-transform group-hover:scale-110"></i>
+                            내 컬렉션
+                        </button>
+                        <button class="hidden md:flex px-6 h-12 bg-zinc-900 border border-zinc-700 rounded-lg font-medium hover:bg-zinc-800 transition flex items-center gap-2 text-white group">
+                            <i class="fas fa-share-nodes transition-transform group-hover:scale-110"></i>
+                            공유하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-24">
+        
+        <!-- UPDATE: 사용자 아이콘을 실제 이미지로 변경 -->
+        <section>
+            <h2 class="text-2xl font-bold mb-6 text-white">이 작품을 추천한 이유</h2>
+            <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
+                <div class="flex items-center gap-3">
+                    <a href="#" class="flex-shrink-0">
+                        <img class="w-8 h-8 rounded-full object-cover" src="./반응형_모아_작품상세_리뉴얼v3/5_2.스릴러광_제주도민.jpeg" alt="드라마광_제주도민">
+                    </a>
+                    <p class="text-zinc-300">취향이 비슷한 <strong class="text-white">드라마광_제주도민</strong>님이 높은 점수를 줬어요.</p>
+                </div>
+                <div class="border-t border-zinc-800"></div>
+                <div class="flex items-center gap-3">
+                     <a href="#" class="flex-shrink-0">
+                        <img src="./반응형_모아_작품상세_리뉴얼v3/6_1.돌이킬 수 없는.jpeg" alt="돌이킬 수 없는" class="w-8 h-8 rounded-full object-cover">
+                    </a>
+                    <p class="text-zinc-300">재밌게 보신 <strong class="text-white">악마를 보았다</strong>와 비슷해요.</p>
+                </div>
+                <div class="border-t border-zinc-800"></div>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 flex items-center justify-center">
+                        <i class="fas fa-hashtag text-purple-400"></i>
+                    </div>
+                    <p class="text-zinc-300">선호하는 태그 <strong class="text-white">#범죄</strong> <strong class="text-white">#스릴러</strong></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. 시청 정보 -->
+        <section id="platforms">
+            <h2 class="text-2xl font-bold mb-6 text-white">시청 정보</h2>
+            <div class="mb-6">
+                <div class="flex gap-2 border-b border-zinc-800 -mx-4 px-4 overflow-x-auto no-scrollbar">
+                    <button class="tab-button px-3 sm:px-4 py-3 text-sm font-medium text-zinc-400 hover:text-white transition whitespace-nowrap" data-tab="subscription">
+                        <span class="gradient-text">구독</span><span class="ml-1 text-zinc-500">2</span>
+                    </button>
+                    <button class="tab-button px-3 sm:px-4 py-3 text-sm font-medium text-zinc-400 hover:text-white transition whitespace-nowrap" data-tab="free">
+                        <span>무료</span><span class="ml-1 text-zinc-500">1</span>
+                    </button>
+                    <button class="tab-button px-3 sm:px-4 py-3 text-sm font-medium text-zinc-400 hover:text-white transition whitespace-nowrap" data-tab="rental">
+                        <span>대여</span><span class="ml-1 text-zinc-500">5</span>
+                    </button>
+                    <button class="tab-button px-3 sm:px-4 py-3 text-sm font-medium text-zinc-400 hover:text-white transition whitespace-nowrap" data-tab="purchase">
+                        <span>구매</span><span class="ml-1 text-zinc-500">4</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tab-panel active" data-panel="subscription">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- 넷플릭스 - 구독 중인 서비스로 강조 -->
+                    <div class="bg-zinc-900 border-2 border-purple-500/50 rounded-xl p-5 hover:border-purple-500/70 transition relative">
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_netflix.png" alt="넷플릭스" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">넷플릭스</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-purple-500 text-white px-2 py-0.5 rounded font-semibold">내 구독</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-indigo-600 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                                <span>바로보기</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_coupangplay.png" alt="쿠팡플레이" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">쿠팡플레이</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-green-600 text-white px-2 py-0.5 rounded font-semibold">구독포함</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                            <span>바로보기</span>
+                        </button>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_lguplus.png" alt="U+모바일tv" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">U+모바일tv</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-green-600 text-white px-2 py-0.5 rounded font-semibold">구독포함</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                                <span>바로보기</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-panel" data-panel="free">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_coupangplay.png" alt="쿠팡플레이" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">쿠팡플레이</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-green-600 text-white px-2 py-0.5 rounded font-semibold">무료</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                                <span>바로보기</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-panel" data-panel="rental">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_youtube.svg" alt="유튜브" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">유튜브</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-semibold">대여</span>
+                                    <span class="text-xs text-zinc-500">1,200원</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                                <span>바로보기</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_cinefox.png" alt="씨네폭스" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">씨네폭스</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-semibold">대여</span>
+                                    <span class="text-xs text-zinc-500">1,400원</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                                <span>바로보기</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_wavve.png" alt="웨이브" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">웨이브</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-semibold">대여</span>
+                                    <span class="text-xs text-zinc-500">1,540원</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                                <span>바로보기</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 왓챠 - 구독 중인 서비스로 강조 -->
+                    <div class="bg-zinc-900 border-2 border-purple-500/50 rounded-xl p-5 hover:border-purple-500/70 transition relative">
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0 p-2">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_watcha.png" alt="왓챠" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">왓챠</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-purple-500 text-white px-2 py-0.5 rounded font-semibold">내 구독</span>
+                                    <span class="text-xs text-zinc-500">1,540원</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-indigo-600 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                                <span>바로보기</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_lguplus.png" alt="U+모바일tv" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">U+모바일tv</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-semibold">대여</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                            <span>바로보기</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <div class="tab-panel" data-panel="purchase">
+                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_youtube.svg" alt="유튜브" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">유튜브</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-semibold">구매</span>
+                                    <span class="text-xs text-zinc-500">1,200원</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                                <span>바로보기</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_cinefox.png" alt="씨네폭스" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">씨네폭스</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-semibold">구매</span>
+                                    <span class="text-xs text-zinc-500">5,000원</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                            <span>바로보기</span>
+                        </button>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_wavve.png" alt="웨이브" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">웨이브</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-semibold">구매</span>
+                                    <span class="text-xs text-zinc-500">5,500원</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                                <span>바로보기</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 왓챠 - 구독 중인 서비스로 강조 -->
+                    <div class="bg-zinc-900 border-2 border-purple-500/50 rounded-xl p-5 hover:border-purple-500/70 transition relative">
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-12 h-12 flex items-center justify-center flex-shrink-0 p-2">
+                                <img src="./모아_OTT_로고이미지/btn_squircle_watcha.png" alt="왓챠" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">왓챠</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-purple-500 text-white px-2 py-0.5 rounded font-semibold">내 구독</span>
+                                    <span class="text-xs text-zinc-500">5,500원</span>
+                                </div>
+                            </div>
+                            <button class="h-9 px-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-indigo-600 transition flex items-center gap-2 text-sm">
+                                <i class="fas fa-play text-xs"></i>
+                            <span>바로보기</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </div>
+            
+            <div class="tab-panel" data-panel="cinema">
+                <p class="text-center text-zinc-500 py-8">상영 정보가 없습니다.</p>
+            </div>
+             <div class="tab-panel" data-panel="free">
+                <p class="text-center text-zinc-500 py-8">무료 시청 정보가 없습니다.</p>
+            </div>
+             <div class="tab-panel" data-panel="purchase">
+                <p class="text-center text-zinc-500 py-8">구매 가능 정보가 없습니다.</p>
+            </div>
+        </section>
+
+        <!-- 3. 출연/제작 -->
+        <section>
+            <h2 class="text-2xl font-bold mb-6 text-white">출연 · 제작</h2>
+            <div class="space-y-8">
+                <div>
+                    <h3 class="text-sm font-semibold mb-4 text-zinc-400 uppercase tracking-wide">감독 · 시나리오</h3>
+                    <div class="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-6">
+                        <a href="#" class="flex items-center gap-4 group">
+                            <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_1.나홍진.jpeg" alt="나홍진" class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">나홍진</div>
+                                <div class="text-sm text-zinc-500">감독/시나리오</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold mb-4 text-zinc-400 uppercase tracking-wide">주요 출연진</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-6">
+                        <a href="#" class="flex items-center gap-4 group">
+                             <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_2.김윤석.jpeg" alt="김윤석" class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">김윤석</div>
+                                <div class="text-sm text-zinc-500">주연 | 엄중호</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center gap-4 group">
+                             <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_3.하정우.jpeg" alt="하정우" class="w-full h-full object-contain">
+                    </div>
+                            <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">하정우</div>
+                                <div class="text-sm text-zinc-500">주연 | 지영민</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center gap-4 group">
+                            <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_4.서영희.jpeg" alt="서영희" class="w-full h-full object-contain">
+                </div>
+                <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">서영희</div>
+                                <div class="text-sm text-zinc-500">조연 | 김미진</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center gap-4 group">
+                             <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_5.김유정.jpeg" alt="김유정" class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">김유정</div>
+                                <div class="text-sm text-zinc-500">조연 | 미진 딸, 은지</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center gap-4 group">
+                             <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_6.정인기.jpeg" alt="정인기" class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">정인기</div>
+                                <div class="text-sm text-zinc-500">조연 | 이 형사</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center gap-4 group">
+                            <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_7.최정우.jpeg" alt="최정우" class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">최정우</div>
+                                <div class="text-sm text-zinc-500">조연 | 기수대장</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center gap-4 group">
+                            <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_8.민경진.jpg" alt="민경진" class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">민경진</div>
+                                <div class="text-sm text-zinc-500">조연 | 반장</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center gap-4 group">
+                             <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_9.박효주.jpeg" alt="박효주" class="w-full h-full object-contain">
+                    </div>
+                            <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">박효주</div>
+                                <div class="text-sm text-zinc-500">조연 | 오 형사</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center gap-4 group">
+                             <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_10.구본웅.jpeg" alt="구본웅" class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">구본웅</div>
+                                <div class="text-sm text-zinc-500">조연 | 오좆</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center gap-4 group">
+                             <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_11.송요셉.jpg" alt="송요셉" class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">송요셉</div>
+                                <div class="text-sm text-zinc-500">단역</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center gap-4 group">
+                             <div class="w-14 h-14 rounded-full border-2 border-zinc-800 group-hover:border-purple-500 transition overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/3_12.하성광.jpeg" alt="하성광" class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <div class="font-semibold text-white group-hover:text-purple-400 transition">하성광</div>
+                                <div class="text-sm text-zinc-500">단역</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 미디어 -->
+        <section>
+            <h2 class="text-2xl font-bold mb-6 text-white">미디어</h2>
+            <div class="space-y-10">
+                <div>
+                    <h3 class="text-sm font-semibold mb-4 text-zinc-400 uppercase tracking-wide">예고편 & 메이킹</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <a href="#" class="aspect-video rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 relative group hover:border-purple-500/50 transition">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/4_1.티저예고편.jpeg" alt="영상" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 group-hover:bg-black/30 transition">
+                                <div class="w-10 h-10 rounded-full bg-white backdrop-blur flex items-center justify-center mb-2">
+                                    <i class="fas fa-play text-black text-sm ml-0.5"></i>
+                                </div>
+                                <span class="text-sm font-medium">티저 예고편</span>
+                            </div>
+                        </a>
+                        <a href="#" class="aspect-video rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 relative group hover:border-purple-500/50 transition">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/4_2.메이킹 필름.jpeg" alt="메이킹" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 group-hover:bg-black/30 transition">
+                                <div class="w-10 h-10 rounded-full bg-white backdrop-blur flex items-center justify-center mb-2">
+                                    <i class="fas fa-play text-black text-sm ml-0.5"></i>
+                                </div>
+                                <span class="text-sm font-medium">메이킹 필름</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold mb-4 text-zinc-400 uppercase tracking-wide">스틸컷</h3>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <a href="#" class="aspect-video rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 group hover:border-purple-500/50 transition">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/4_3.스틸컷.jpeg" alt="스틸컷" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </a>
+                        <a href="#" class="aspect-video rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 group hover:border-purple-500/50 transition">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/4_4.스틸컷.jpeg" alt="스틸컷" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </a>
+                        <a href="#" class="aspect-video rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 group hover:border-purple-500/50 transition">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/4_5.스틸컷.jpeg" alt="스틸컷" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </a>
+                        <a href="#" class="aspect-video rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 group hover:border-purple-500/50 transition">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/4_6.스틸컷.jpeg" alt="스틸컷" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold mb-4 text-zinc-400 uppercase tracking-wide">OST</h3>
+                    <div class="mb-4">
+                        <p class="text-sm text-zinc-500">음악 감독: 김준석, 최용락</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition group">
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="w-14 h-14 rounded-lg bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+                                    <i class="fas fa-music text-zinc-500"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-white mb-1">Chaser (Main Theme)</div>
+                                    <div class="text-sm text-zinc-500">김준석</div>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#1DB954]" title="Spotify에서 듣기">
+                                        <i class="fab fa-spotify text-lg"></i>
+                                    </a>
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#00CD3C]" title="Melon에서 듣기">
+                                        <i class="fas fa-music text-sm"></i>
+                                    </a>
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#FF0000]" title="YouTube Music에서 듣기">
+                                        <i class="fab fa-youtube text-lg"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition group">
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="w-14 h-14 rounded-lg bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+                                    <i class="fas fa-music text-zinc-500"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-white mb-1">어둠 속의 발자국</div>
+                                    <div class="text-sm text-zinc-500">최용락</div>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#1DB954]" title="Spotify에서 듣기">
+                                        <i class="fab fa-spotify text-lg"></i>
+                                    </a>
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#00CD3C]" title="Melon에서 듣기">
+                                        <i class="fas fa-music text-sm"></i>
+                                    </a>
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#FF0000]" title="YouTube Music에서 듣기">
+                                        <i class="fab fa-youtube text-lg"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition group">
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="w-14 h-14 rounded-lg bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+                                    <i class="fas fa-music text-zinc-500"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-white mb-1">4885</div>
+                                    <div class="text-sm text-zinc-500">김준석</div>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#1DB954]" title="Spotify에서 듣기">
+                                        <i class="fab fa-spotify text-lg"></i>
+                                    </a>
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#00CD3C]" title="Melon에서 듣기">
+                                        <i class="fas fa-music text-sm"></i>
+                                    </a>
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#FF0000]" title="YouTube Music에서 듣기">
+                                        <i class="fab fa-youtube text-lg"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition group">
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="w-14 h-14 rounded-lg bg-zinc-800 flex-shrink-0 flex items-center justify-center">
+                                    <i class="fas fa-music text-zinc-500"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-white mb-1">Escape</div>
+                                    <div class="text-sm text-zinc-500">최용락</div>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#1DB954]" title="Spotify에서 듣기">
+                                        <i class="fab fa-spotify text-lg"></i>
+                                    </a>
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#00CD3C]" title="Melon에서 듣기">
+                                        <i class="fas fa-music text-sm"></i>
+                                    </a>
+                                    <a href="#" target="_blank" class="w-9 h-9 rounded-full text-zinc-400 flex items-center justify-center hover:text-[#FF0000]" title="YouTube Music에서 듣기">
+                                        <i class="fab fa-youtube text-lg"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 리뷰 -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-white">리뷰</h2>
+            </div>
+            <div class="gradient-border rounded-xl p-6 mb-8">
+                <h3 class="font-semibold mb-4 text-white">리뷰 작성하기</h3>
+                <div class="mb-4 flex flex-col items-center justify-center gap-2">
+                    <div class="rating-container review-rating-container" id="review-rating-container">
+                        <input type="radio" id="r10" name="review-rating" value="5"><label for="r10"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="r9" name="review-rating" value="4.5"><label for="r9"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="r8" name="review-rating" value="4"><label for="r8"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="r7" name="review-rating" value="3.5"><label for="r7"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="r6" name="review-rating" value="3"><label for="r6"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="r5" name="review-rating" value="2.5"><label for="r5"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="r4" name="review-rating" value="2"><label for="r4"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="r3" name="review-rating" value="1.5"><label for="r3"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="r2" name="review-rating" value="1"><label for="r2"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="r1" name="review-rating" value="0.5"><label for="r1"><i class="fas fa-star"></i></label>
+                    </div>
+                    <span id="rating-display" class="text-lg font-bold text-yellow-400 h-7 flex items-center"></span>
+                </div>
+                <textarea id="review-textarea" rows="4" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-purple-500 transition" placeholder="작품에 대한 감상을 자유롭게 남겨주세요. (최대 500자)"></textarea>
+                <div class="mt-4 flex justify-end">
+                    <button id="review-submit-button" disabled class="px-6 h-10 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">제출하기</button>
+                </div>
+            </div>
+            <div class="gradient-border rounded-xl p-6 mb-10" style="border-width: 2px;">
+                <div class="flex items-start justify-between mb-3">
+                    <a href="#" class="flex items-center gap-3 group">
+                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center overflow-hidden">
+                            <img src="./내 프로필 사진/profile.jpg" alt="내 프로필" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <span class="font-semibold text-white group-hover:text-purple-400 transition">김민준</span>
+                            <div class="flex items-center gap-1 mt-1">
+                                <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                <span class="text-sm text-zinc-400">4.5</span>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="flex items-center gap-2">
+                        <button class="text-sm text-zinc-500 hover:text-purple-400">수정</button>
+                        <button class="text-sm text-zinc-500 hover:text-red-400">삭제</button>
+                    </div>
+                </div>
+                <p class="text-zinc-400 leading-relaxed mb-4">제 인생 최고의 한국 스릴러입니다. 김윤석의 광기 어린 추격과 하정우의 소름 돋는 연기는 다시 봐도 압권이네요. '4885'... 잊을 수 없습니다.</p>
+                <div class="flex items-center gap-4 text-sm text-zinc-400 mb-2">
+                    <button class="hover:text-purple-400 flex items-center gap-1 transition">
+                        <i class="far fa-thumbs-up text-base"></i>
+                        <span>42</span>
+                    </button>
+                    <button class="hover:text-purple-400 flex items-center gap-1 transition">
+                        <i class="far fa-comment text-base"></i>
+                        <span>8</span>
+                    </button>
+                </div>
+                <div class="text-xs text-zinc-600">2025년 10월 12일</div>
+            </div>
+            <div class="mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex gap-2 border-b border-zinc-800">
+                        <button class="px-4 py-3 text-sm font-semibold gradient-text border-b-2 border-purple-500">전체</button>
+                        <button class="px-4 py-3 text-sm font-medium text-zinc-500 hover:text-white transition">평론가</button>
+                        <button class="px-4 py-3 text-sm font-medium text-zinc-500 hover:text-white transition">사용자</button>
+                    </div>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <span class="text-sm text-zinc-400">스포일러 숨기기</span>
+                        <div class="relative">
+                            <input type="checkbox" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-zinc-800 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-indigo-500 transition"></div>
+                            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition peer-checked:translate-x-5"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition hover:-translate-y-1">
+                    <div class="flex items-start justify-between mb-4">
+                        <a href="#" class="flex items-center gap-3 group">
+                            <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/5_1.이동진.jpeg" alt="이동진" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-white group-hover:text-purple-400 transition">이동진</span>
+                                    <span class="text-xs gradient-bg text-purple-400 px-2 py-0.5 rounded">평론가</span>
+                                </div>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                    <span class="text-sm text-zinc-400">5.0</span>
+                                </div>
+                            </div>
+                        </a>
+                        <button class="text-zinc-600 hover:text-purple-400">
+                            <i class="far fa-bookmark"></i>
+                        </button>
+                    </div>
+                    <p class="text-zinc-400 leading-relaxed mb-4">숨 쉴 틈 없이 몰아붙이며 장르의 쾌감을 극한으로 밀어붙인다.</p>
+                    <div class="flex items-center gap-4 text-sm text-zinc-400">
+                        <button class="hover:text-purple-400 flex items-center gap-1 transition">
+                            <i class="far fa-thumbs-up text-base"></i>
+                            <span>58</span>
+                        </button>
+                        <button class="hover:text-purple-400 flex items-center gap-1 transition">
+                            <i class="far fa-comment text-base"></i>
+                            <span>9</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition hover:-translate-y-1">
+                    <div class="flex items-start justify-between mb-4">
+                        <a href="#" class="flex items-center gap-3 group">
+                            <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/5_2.스릴러광_제주도민.jpeg" alt="스릴러광_제주도민" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <span class="font-semibold text-white group-hover:text-purple-400 transition">스릴러광_제주도민</span>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                    <span class="text-sm text-zinc-400">5.0</span>
+                                </div>
+                            </div>
+                        </a>
+                        <button class="text-purple-400">
+                            <i class="fas fa-bookmark"></i>
+                        </button>
+                    </div>
+                    <p class="text-zinc-400 leading-relaxed mb-4">'4885'... 이 네 글자가 아직도 공포입니다. 미진을 구할 수 있을 거라는 희망을 끝까지 놓지 못하게 만들고 마지막에 박살 내는, 정말 지독한 영화.</p>
+                    <div class="flex items-center gap-4 text-sm text-zinc-400">
+                        <button class="hover:text-purple-400 flex items-center gap-1 transition">
+                            <i class="far fa-thumbs-up text-base"></i>
+                            <span>253</span>
+                        </button>
+                        <button class="hover:text-purple-400 flex items-center gap-1 transition">
+                            <i class="far fa-comment text-base"></i>
+                            <span>12</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition hover:-translate-y-1">
+                    <div class="flex items-start justify-between mb-4">
+                        <a href="#" class="flex items-center gap-3 group">
+                           <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden">
+                                <img src="./반응형_모아_작품상세_리뉴얼v3/5_3.MOA사용자.jpeg" alt="MOA사용자" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <span class="font-semibold text-white group-hover:text-purple-400 transition">MOA사용자</span>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                    <span class="text-sm text-zinc-400">4.0</span>
+                                </div>
+                            </div>
+                        </a>
+                        <button class="text-zinc-600 hover:text-purple-400">
+                            <i class="far fa-bookmark"></i>
+                        </button>
+                    </div>
+                    <p class="text-zinc-400 leading-relaxed mb-4">보는 내내 너무 화가 나고 답답해서 힘들었습니다. 공세우기에 혈안이 된 경찰들의 모습이 너무 현실적이라 더 그랬네요. 영화 자체는 정말 잘 만들었습니다.</p>
+                    <div class="flex items-center gap-4 text-sm text-zinc-400">
+                        <button class="hover:text-purple-400 flex items-center gap-1 transition">
+                            <i class="far fa-thumbs-up text-base"></i>
+                            <span>189</span>
+                        </button>
+                        <button class="hover:text-purple-400 flex items-center gap-1 transition">
+                            <i class="far fa-comment text-base"></i>
+                            <span>21</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-8">
+                <button class="px-6 h-10 bg-zinc-800 border border-zinc-700 text-white rounded-lg font-semibold hover:bg-zinc-700 transition">리뷰 더보기</button>
+            </div>
+        </section>
+
+        <!-- 6. 비슷한 작품 -->
+        <section>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">비슷한 작품</h2>
+                <div class="flex items-center gap-2">
+                    <button id="similar-left" class="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center hover:bg-zinc-700 transition">
+                        <i class="fas fa-chevron-left text-white text-sm"></i>
+                    </button>
+                    <button id="similar-right" class="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center hover:bg-zinc-700 transition">
+                        <i class="fas fa-chevron-right text-white text-sm"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="relative">
+                <div id="similar-scroll" class="flex overflow-x-auto gap-4 pb-4 no-scrollbar scroll-smooth -mx-4 px-4">
+                    <a href="#" class="flex-shrink-0 w-48 group">
+                        <div class="aspect-[2/3] rounded-xl mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition overflow-hidden">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/6_1.돌이킬 수 없는.jpeg" alt="돌이킬 수 없는" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </div>
+                        <div class="font-semibold text-white truncate">돌이킬 수 없는</div>
+                        <div class="text-sm text-zinc-500 mt-1">2002 · 스릴러</div>
+                        <div class="text-xs gradient-text mt-1 font-semibold">#스릴러 매치</div>
+                        <div class="flex items-center gap-1.5 mt-2">
+                            <i class="fas fa-star text-purple-400 text-xs"></i>
+                            <span class="text-sm font-semibold text-white">2.9</span>
+                            <span class="text-zinc-500 text-xs">예상 별점</span>
+                        </div>
+                    </a>
+                    <a href="#" class="flex-shrink-0 w-48 group">
+                        <div class="aspect-[2/3] rounded-xl mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition overflow-hidden">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/6_2.미스터 브룩스.jpeg" alt="미스터 브룩스" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </div>
+                        <div class="font-semibold text-white truncate">미스터 브룩스</div>
+                        <div class="text-sm text-zinc-500 mt-1">2007 · 스릴러</div>
+                        <div class="text-xs gradient-text mt-1 font-semibold">#범죄 매치</div>
+                        <div class="flex items-center gap-1.5 mt-2">
+                            <i class="fas fa-star text-purple-400 text-xs"></i>
+                            <span class="text-sm font-semibold text-white">3.2</span>
+                            <span class="text-zinc-500 text-xs">예상 별점</span>
+                        </div>
+                    </a>
+                    <a href="#" class="flex-shrink-0 w-48 group">
+                        <div class="aspect-[2/3] rounded-xl mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition overflow-hidden">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/6_3.브레이브 원.jpeg" alt="브레이브 원" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </div>
+                        <div class="font-semibold text-white truncate">브레이브 원</div>
+                        <div class="text-sm text-zinc-500 mt-1">2017 · 스릴러</div>
+                        <div class="text-xs gradient-text mt-1 font-semibold">#추격 매치</div>
+                        <div class="flex items-center gap-1.5 mt-2">
+                            <i class="fas fa-star text-purple-400 text-xs"></i>
+                            <span class="text-sm font-semibold text-white">3.1</span>
+                            <span class="text-zinc-500 text-xs">예상 별점</span>
+                        </div>
+                    </a>
+                    <a href="#" class="flex-shrink-0 w-48 group">
+                        <div class="aspect-[2/3] rounded-xl mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition overflow-hidden">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/6_4.스트리트 킬.jpeg" alt="스트리트 킹" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </div>
+                        <div class="font-semibold text-white truncate">스트리트 킹</div>
+                        <div class="text-sm text-zinc-500 mt-1">2008 · 액션</div>
+                        <div class="text-xs gradient-text mt-1 font-semibold">#액션 매치</div>
+                        <div class="flex items-center gap-1.5 mt-2">
+                            <i class="fas fa-star text-purple-400 text-xs"></i>
+                            <span class="text-sm font-semibold text-white">3.4</span>
+                            <span class="text-zinc-500 text-xs">예상 별점</span>
+                        </div>
+                    </a>
+                    <a href="#" class="flex-shrink-0 w-48 group">
+                        <div class="aspect-[2/3] rounded-xl mb-3 bg-zinc-900 border border-zinc-800 group-hover:border-purple-500/50 transition overflow-hidden">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/6_5.페이스 블라인드.jpeg" alt="페이스 블라인드" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </div>
+                        <div class="font-semibold text-white truncate">페이스 블라인드</div>
+                        <div class="text-sm text-zinc-500 mt-1">2011 · 스릴러</div>
+                        <div class="text-xs gradient-text mt-1 font-semibold">#스릴러 매치</div>
+                        <div class="flex items-center gap-1.5 mt-2">
+                            <i class="fas fa-star text-purple-400 text-xs"></i>
+                            <span class="text-sm font-semibold text-white">2.8</span>
+                            <span class="text-zinc-500 text-xs">예상 별점</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. 컬렉션 -->
+        <section>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">이 작품이 포함된 컬렉션 <span class="text-purple-400 text-2xl ml-2">240</span></h2>
+                <a href="#" class="text-base font-medium text-zinc-400 hover:text-white transition whitespace-nowrap">더보기</a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <a href="#" class="rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-purple-500/50 transition group">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <h3 class="font-bold text-white text-xl">박평식 평론가 TOP 영화</h3>
+                            <button class="text-zinc-600 hover:text-purple-400 transition">
+                                <i class="far fa-bookmark text-2xl"></i>
+                            </button>
+                        </div>
+                        <p class="text-base text-zinc-400 mb-5 line-clamp-2 h-12">키노라이츠에서 선정한 박평식 평론가의 최고 영화 컬렉션</p>
+                    </div>
+                    <div class="flex gap-2 px-6 pb-6">
+                        <div class="w-1/4 aspect-[2/3] rounded-lg bg-zinc-800 overflow-hidden border border-zinc-700">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/7_1.박평식 평론가 top 영화 1.jpeg" class="w-full h-full object-contain">
+                        </div>
+                        <div class="w-1/4 aspect-[2/3] rounded-lg bg-zinc-800 overflow-hidden border-2 border-purple-500">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/7_2.박평식 평론가 top 영화 2.jpeg" class="w-full h-full object-contain">
+                        </div>
+                        <div class="w-1/4 aspect-[2/3] rounded-lg bg-zinc-800 border border-zinc-700">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/7_3.박평식 평론가 top 영화 3.jpeg" class="w-full h-full object-contain">
+                        </div>
+                        <div class="w-1/4 aspect-[2/3] rounded-lg gradient-bg border border-purple-500/30 flex items-center justify-center">
+                            <span class="text-base text-white font-bold">+8</span>
+                        </div>
+                    </div>
+                    <div class="px-6 py-5 border-t border-zinc-800 flex items-center justify-between text-sm text-zinc-500">
+                        <div class="flex gap-3">
+                            <span class="font-medium">#평론가</span>
+                            <span class="font-medium">#키노라이츠</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center gap-2 text-zinc-400">
+                                <i class="far fa-comment text-base"></i>
+                                <span class="font-medium">980</span>
+                            </span>
+                            <span class="inline-flex items-center gap-2 text-zinc-400">
+                                <i class="far fa-bookmark text-base"></i>
+                                <span class="font-medium">310</span>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-purple-500/50 transition group">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <h3 class="font-bold text-white text-xl">역대 영화 관객수 TOP 500</h3>
+                            <button class="text-purple-400 transition">
+                                <i class="fas fa-bookmark text-2xl"></i>
+                            </button>
+                        </div>
+                        <p class="text-base text-zinc-400 mb-5 line-clamp-2 h-12">키노라이츠에서 선정한 역대 영화 관객수 TOP 500 작품들</p>
+                    </div>
+                    <div class="flex gap-2 px-6 pb-6">
+                        <div class="w-1/4 aspect-[2/3] rounded-lg bg-zinc-800 overflow-hidden border border-zinc-700">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/7_4.역대 영화 관객수 top 500 1.jpeg" class="w-full h-full object-contain">
+                        </div>
+                        <div class="w-1/4 aspect-[2/3] rounded-lg bg-zinc-800 overflow-hidden border-2 border-purple-500">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/7_5.역대 영화 관객수 top 500 2.jpeg" class="w-full h-full object-contain">
+                        </div>
+                        <div class="w-1/4 aspect-[2/3] rounded-lg bg-zinc-800 border border-zinc-700">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/7_6.역대 영화 관객수 top 500 3.jpeg" class="w-full h-full object-contain">
+                        </div>
+                        <div class="w-1/4 aspect-[2/3] rounded-lg gradient-bg border border-purple-500/30 flex items-center justify-center">
+                            <span class="text-base text-white font-bold">+497</span>
+                        </div>
+                    </div>
+                    <div class="px-6 py-5 border-t border-zinc-800 flex items-center justify-between text-sm text-zinc-500">
+                        <div class="flex gap-3">
+                            <span class="font-medium">#관객수</span>
+                            <span class="font-medium">#키노라이츠</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center gap-2 text-zinc-400">
+                                <i class="far fa-comment text-base"></i>
+                                <span class="font-medium">1.2k</span>
+                            </span>
+                            <span class="inline-flex items-center gap-2 text-zinc-400">
+                                <i class="far fa-bookmark text-base"></i>
+                                <span class="font-medium">450</span>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-purple-500/50 transition group">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <h3 class="font-bold text-white text-xl">취향저격🫰</h3>
+                            <button class="text-zinc-600 hover:text-purple-400 transition">
+                                <i class="far fa-bookmark text-2xl"></i>
+                            </button>
+                        </div>
+                        <p class="text-base text-zinc-400 mb-5 line-clamp-2 h-12">어바웃타임 사용자가 만든 취향저격 컬렉션</p>
+                    </div>
+                    <div class="flex gap-2 px-6 pb-6">
+                        <div class="w-1/4 aspect-[2/3] rounded-lg bg-zinc-800 overflow-hidden border-2 border-purple-500">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/7_7.취향저격 1.jpeg" class="w-full h-full object-contain">
+                        </div>
+                        <div class="w-1/4 aspect-[2/3] rounded-lg bg-zinc-800 overflow-hidden border border-zinc-700">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/7_8.취향저격 2.jpeg" class="w-full h-full object-contain">
+                        </div>
+                        <div class="w-1/4 aspect-[2/3] rounded-lg bg-zinc-800 border border-zinc-700">
+                            <img src="./반응형_모아_작품상세_리뉴얼v3/7_9.취향저격 3.jpeg" class="w-full h-full object-contain">
+                        </div>
+                        <div class="w-1/4 aspect-[2/3] rounded-lg gradient-bg border border-purple-500/30 flex items-center justify-center">
+                            <span class="text-base text-white font-bold">+15</span>
+                        </div>
+                    </div>
+                    <div class="px-6 py-5 border-t border-zinc-800 flex items-center justify-between text-sm text-zinc-500">
+                        <div class="flex gap-3">
+                            <span class="font-medium">#취향저격</span>
+                            <span class="font-medium">#어바웃타임</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center gap-2 text-zinc-400">
+                                <i class="far fa-comment text-base"></i>
+                                <span class="font-medium">2.1k</span>
+                            </span>
+                            <span class="inline-flex items-center gap-2 text-zinc-400">
+                                <i class="far fa-bookmark text-base"></i>
+                                <span class="font-medium">890</span>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+        
+        <!-- 8. 작품 아티클 -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-white">작품 아티클</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 gap-y-10 md:gap-y-6">
+                <a href="#" class="group">
+                    <div class="aspect-video rounded-xl overflow-hidden mb-4 border border-zinc-800 group-hover:border-purple-500/50 transition">
+                         <img src="./반응형_모아_작품상세_리뉴얼v3/8_1.MOA 심층분석.jpeg" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="MOA 심층분석">
+                    </div>
+                    <span class="text-sm font-semibold text-indigo-400">MOA 심층분석</span>
+                    <h3 class="text-lg font-bold text-white mt-1 group-hover:text-purple-400 transition">영화 '추격자'와 유영철 사건, 같은 점과 다른 점</h3>
+                </a>
+                <a href="#" class="group">
+                    <div class="aspect-video rounded-xl overflow-hidden mb-4 border border-zinc-800 group-hover:border-purple-500/50 transition">
+                         <img src="./반응형_모아_작품상세_리뉴얼v3/8_2.오마이스타.jpeg" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="오마이스타">
+                    </div>
+                    <span class="text-sm font-semibold text-indigo-400">오마이스타</span>
+                    <h3 class="text-lg font-bold text-white mt-1 group-hover:text-purple-400 transition">&lt;추격자&gt;가 주목받아야 할 이유 세 가지</h3>
+                </a>
+                 <a href="#" class="group">
+                    <div class="aspect-video rounded-xl overflow-hidden mb-4 border border-zinc-800 group-hover:border-purple-500/50 transition">
+                        <img src="./반응형_모아_작품상세_리뉴얼v3/8_3.감독 인터뷰.jpeg" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="감독 인터뷰">
+                    </div>
+                    <span class="text-sm font-semibold text-indigo-400">감독 인터뷰</span>
+                    <h3 class="text-lg font-bold text-white mt-1 group-hover:text-purple-400 transition">나홍진 감독, ''추격자'' 속 수수께끼를 말하다</h3>
+                </a>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Mobile Nav -->
+    <!-- 스크롤 투 탑 버튼 (모바일만) -->
+    <button id="scroll-to-top" class="fixed bottom-20 right-4 md:hidden w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-40">
+        <i class="fas fa-chevron-up text-lg"></i>
+    </button>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-md border-t border-zinc-800 md:hidden z-50">
+        <div class="flex items-center justify-around h-16 py-2">
+            <a href="./02 홈화면_리뉴얼V12.html" class="flex flex-col items-center gap-1 text-white">
+                <i class="fas fa-home text-lg"></i>
+                <span class="text-xs">홈</span>
+            </a>
+            <a href="./04 검색필드_리뉴얼v2.html" class="flex flex-col items-center gap-1 text-zinc-500">
+                <i class="fas fa-search text-base"></i>
+                <span class="text-xs">검색</span>
+            </a>
+            <a href="./08 마이페이지_리뉴얼V5.html" class="flex flex-col items-center gap-1 text-zinc-500">
+                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 overflow-hidden">
+                    <img src="./내 프로필 사진/profile.jpg" alt="profile" class="w-full h-full object-cover">
+                </div>
+                <span class="text-xs">MY</span>
+            </a>
+        </div>
+    </nav>
+    <div class="h-20 md:hidden"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 스크롤 이벤트로 모바일 헤더 제목 표시
+            const header = document.getElementById('main-header');
+            const mobileTitle = document.getElementById('mobile-title');
+            
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 200) {
+                    header.classList.add('bg-black');
+                    mobileTitle.classList.remove('opacity-0');
+                    mobileTitle.classList.add('opacity-100');
+                } else {
+                    header.classList.remove('bg-black');
+                    mobileTitle.classList.add('opacity-0');
+                    mobileTitle.classList.remove('opacity-100');
+                }
+            });
+
+            // 스크롤 투 탑 버튼 기능
+            const scrollToTopBtn = document.getElementById('scroll-to-top');
+            const footer = document.querySelector('footer');
+            
+            window.addEventListener('scroll', () => {
+                if (footer) {
+                    const footerTop = footer.offsetTop;
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const windowHeight = window.innerHeight;
+                    
+                    // 페이지 하단 근처에 도달했을 때 버튼 표시
+                    if (scrollTop + windowHeight >= footerTop - 100) {
+                        scrollToTopBtn.classList.remove('opacity-0', 'pointer-events-none');
+                        scrollToTopBtn.classList.add('opacity-100');
+                    } else {
+                        scrollToTopBtn.classList.add('opacity-0', 'pointer-events-none');
+                        scrollToTopBtn.classList.remove('opacity-100');
+                    }
+                }
+            });
+            
+            scrollToTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+
+            // 비슷한 작품 스크롤 기능
+            const similarScroll = document.getElementById('similar-scroll');
+            const similarLeft = document.getElementById('similar-left');
+            const similarRight = document.getElementById('similar-right');
+            
+            if (similarScroll && similarLeft && similarRight) {
+                similarLeft.addEventListener('click', () => {
+                    similarScroll.scrollBy({
+                        left: -200,
+                        behavior: 'smooth'
+                    });
+                });
+                
+                similarRight.addEventListener('click', () => {
+                    similarScroll.scrollBy({
+                        left: 200,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+            
+            // Setup Platform Tabs
+            const platformSection = document.getElementById('platforms');
+            if (platformSection) {
+                 const tabs = platformSection.querySelectorAll('.tab-button');
+                const panels = platformSection.querySelectorAll('.tab-panel');
+
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabType = tab.dataset.tab;
+
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        
+                        panels.forEach(p => {
+                            p.classList.toggle('active', p.dataset.panel === tabType);
+                        });
+                    });
+                });
+                if (tabs.length > 0) {
+                    tabs[0].click();
+                }
+            }
+            
+            // Hero Rating Interactivity
+            const heroRatingContainer = document.getElementById('hero-rating-container');
+            const heroRatingInputs = heroRatingContainer ? heroRatingContainer.querySelectorAll('input') : [];
+            const heroRatingDisplay = document.getElementById('hero-rating-display');
+
+            heroRatingInputs.forEach(input => {
+                input.addEventListener('change', (event) => {
+                    if (heroRatingDisplay) {
+                        heroRatingDisplay.textContent = `${parseFloat(event.target.value).toFixed(1)}`;
+                    }
+                });
+            });
+
+            // Review Form Interactivity
+            const reviewRatingContainer = document.getElementById('review-rating-container');
+            const ratingInputs = reviewRatingContainer ? reviewRatingContainer.querySelectorAll('input') : [];
+            const ratingDisplay = document.getElementById('rating-display');
+            const reviewTextarea = document.getElementById('review-textarea');
+            const reviewSubmitButton = document.getElementById('review-submit-button');
+
+            let selectedRating = null;
+
+            const checkReviewFormValidity = () => {
+                if (!reviewSubmitButton || !reviewTextarea) return;
+                const isTextEntered = reviewTextarea.value.trim().length > 0;
+                const isRatingSelected = selectedRating !== null;
+
+                if (isTextEntered && isRatingSelected) {
+                    reviewSubmitButton.disabled = false;
+                } else {
+                    reviewSubmitButton.disabled = true;
+                }
+            };
+
+            ratingInputs.forEach(input => {
+                input.addEventListener('change', (event) => {
+                    selectedRating = event.target.value;
+                    if (ratingDisplay) {
+                        ratingDisplay.textContent = `${parseFloat(selectedRating).toFixed(1)}`;
+                    }
+                    checkReviewFormValidity();
+                });
+            });
+
+            if (reviewTextarea) {
+                reviewTextarea.addEventListener('input', checkReviewFormValidity);
+            }
+
+            // Plot toggle functionality
+            const plotToggle = document.getElementById('plot-toggle');
+            const plotToggleFull = document.getElementById('plot-toggle-full');
+            const plotText = document.getElementById('plot-text');
+            const plotFull = document.getElementById('plot-full');
+
+            if (plotToggle && plotToggleFull && plotText && plotFull) {
+                plotToggle.addEventListener('click', () => {
+                    plotText.classList.add('hidden');
+                    plotFull.classList.remove('hidden');
+                });
+                
+                plotToggleFull.addEventListener('click', () => {
+                    plotText.classList.remove('hidden');
+                    plotFull.classList.add('hidden');
+                });
+            }
+
+            checkReviewFormValidity(); // Initial check
+        });
+    </script>
+
+    <!-- ===== 최적 푸터 시작 ===== -->
+    <footer class="border-t border-zinc-800/50 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <!-- 평가 카운트 - improved 버전의 배지 디자인 -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900/50 rounded-xl border border-zinc-800">
+                    <i class="fas fa-star text-purple-400 text-base"></i>
+                    <span class="text-sm text-zinc-300">지금까지</span>
+                    <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">647,152,894</span>
+                    <span class="text-sm text-zinc-300">개의 평가가 쌓였어요</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row justify-between gap-8">
+                <!-- 왼쪽 정보 영역 -->
+                <div class="space-y-4 flex-1">
+                    <!-- 상단 약관 링크 -->
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">서비스 이용약관</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">개인정보 처리방침</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">회사 안내</a>
+                    </div>
+
+                    <!-- 문의 정보 -->
+                    <div class="space-y-1.5 text-xs text-zinc-500">
+                        <div>
+                            <span>고객센터</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:cs@moa.com" class="hover:text-purple-400 transition">cs@moa.com</a>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <span>02-123-4567</span>
+                        </div>
+                        <div>
+                            <span>광고 문의</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:ad@moa.com" class="hover:text-purple-400 transition">ad@moa.com</a>
+                        </div>
+                        <div>
+                            <span>제휴 및 대외 협력</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="https://moa.team/contact" class="hover:text-purple-400 transition">moa.team/contact</a>
+                        </div>
+                    </div>
+
+                    <!-- 회사 정보 & 저작권 -->
+                    <div class="space-y-1.5">
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-600">
+                            <span>(주)모아</span>
+                            <span>•</span>
+                            <span>대표 김모아</span>
+                            <span>•</span>
+                            <span>사업자등록번호 123-45-67890</span>
+                            <span>•</span>
+                            <span>서울시 강남구 테헤란로 417</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 오른쪽 언어 & 소셜 영역 -->
+                <div class="flex flex-col items-start lg:items-end gap-4 lg:gap-6">
+                    <!-- 언어 선택 -->
+                    <div class="relative">
+                        <select class="appearance-none bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 hover:bg-zinc-800 transition-all cursor-pointer pr-10 font-medium">
+                            <option value="ko" selected>한국어</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                        </select>
+                        <i class="fas fa-chevron-down text-xs text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                    
+                    <!-- 소셜 아이콘 -->
+                    <div class="flex items-center gap-3">
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-purple-500/10 border border-zinc-700/50 hover:border-purple-500/50 flex items-center justify-center transition-all group" aria-label="Facebook">
+                            <i class="fa-brands fa-facebook text-base text-zinc-400 group-hover:text-purple-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-indigo-500/10 border border-zinc-700/50 hover:border-indigo-500/50 flex items-center justify-center transition-all group" aria-label="Twitter">
+                            <i class="fa-brands fa-twitter text-base text-zinc-400 group-hover:text-indigo-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-pink-500/10 border border-zinc-700/50 hover:border-pink-500/50 flex items-center justify-center transition-all group" aria-label="Instagram">
+                            <i class="fa-brands fa-instagram text-base text-zinc-400 group-hover:text-pink-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-red-500/10 border border-zinc-700/50 hover:border-red-500/50 flex items-center justify-center transition-all group" aria-label="YouTube">
+                            <i class="fa-brands fa-youtube text-base text-zinc-400 group-hover:text-red-400 transition-colors"></i>
+                        </a>
+                    </div>
+
+                    <!-- 저작권 - 우측 하단 -->
+                    <div class="text-xs text-zinc-600 whitespace-nowrap">
+                        © 2025 MOA, Inc. All rights reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- ===== 최적 푸터 끝 ===== -->
+</body>
+</html>
+

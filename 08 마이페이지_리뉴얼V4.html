@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOA | 마이페이지</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <style>
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: #05040a;
+            color: #e5e5e5;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.02em;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .section-card { /* Original simple card for overview */
+            background-color: rgba(17, 16, 23, 0.5);
+            border: 1px solid #27272a;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .gradient-border-card { /* New card style for report sections */
+            border: 1px solid transparent;
+            background: linear-gradient(rgba(24, 24, 27, 0.7), rgba(24, 24, 27, 0.7)) padding-box,
+                        linear-gradient(135deg, #a78bfa40, #818cf840) border-box;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .gradient-border-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(167, 139, 250, 0.1);
+        }
+        .side-nav-link {
+            transition: all 0.2s ease-in-out;
+            border-left: 3px solid transparent;
+        }
+        .side-nav-link:hover {
+            background-color: rgba(39, 39, 42, 0.5);
+            color: #fff;
+        }
+        .side-nav-link.active {
+            background-color: rgba(39, 39, 42, 0.5);
+            border-left-color: #a78bfa;
+            color: #fff;
+            font-weight: 600;
+        }
+        .side-nav-heading {
+            padding: 0.75rem 0.75rem 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .section-title {
+            color: #e5e7eb;
+            text-align: center;
+            margin-bottom: 1.5rem; /* 24px */
+        }
+        .spectrum-map {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            background-image: 
+                repeating-linear-gradient(rgba(55, 65, 81, 0.3) 0 1px, transparent 1px 100%),
+                repeating-linear-gradient(90deg, rgba(55, 65, 81, 0.3) 0 1px, transparent 1px 100%);
+            background-size: 10% 10%;
+        }
+        .spectrum-axis { position: absolute; background-color: rgba(156, 163, 175, 0.3); }
+        .spectrum-dot { 
+            position: absolute; 
+            transform: translate(-50%, -50%); 
+            z-index: 10; 
+        }
+        
+        /* Tooltip styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip-icon {
+            cursor: help;
+            transition: all 0.2s ease;
+        }
+        
+        .tooltip-icon:hover {
+            color: #a78bfa;
+            transform: scale(1.1);
+        }
+        
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #1f1f23, #2a2a2e);
+            border: 1px solid #a78bfa40;
+            border-radius: 8px;
+            padding: 8px 12px;
+            white-space: nowrap;
+            font-size: 12px;
+            color: #e5e7eb;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #1f1f23;
+        }
+        
+        .tooltip-container:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-black">
+    <div class="fixed top-0 left-0 w-full h-full bg-gradient-to-b from-[#0a0514] via-black to-black -z-10"></div>
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-black border-b border-zinc-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-8">
+                    <a href="./02 홈화면_리뉴얼V12.html" class="flex items-center gap-2 flex-shrink-0">
+                        <img src="./logo.svg" alt="MOA" class="h-6 w-auto">
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex flex-1 justify-center px-8">
+                    <div class="relative w-full max-w-sm">
+                        <input type="text" placeholder="작품, 인물, 컬렉션을 검색해보세요" onclick="window.location.href='./04 검색필드_리뉴얼v2.html'" class="w-full h-10 bg-zinc-800 border border-zinc-600/50 rounded-lg pl-10 pr-4 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:border-purple-500 transition">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fas fa-search text-zinc-400 text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1">
+                    <button class="md:hidden w-9 h-9 rounded-full hover:bg-zinc-900 flex items-center justify-center transition flex-shrink-0" onclick="window.location.href='./04 검색필드_리뉴얼v2.html'">
+                        <i class="fas fa-search text-sm"></i>
+                    </button>
+                    <button class="w-9 h-9 rounded-full hover:bg-zinc-900 flex items-center justify-center transition flex-shrink-0">
+                        <i class="far fa-bell text-sm"></i>
+                    </button>
+                    <button class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 overflow-hidden flex-shrink-0" onclick="window.location.href='./08 마이페이지_리뉴얼V5.html'">
+                        <img src="./내 프로필 사진/profile.jpg" alt="profile" class="w-full h-full object-cover">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar -->
+                <aside class="lg:w-64 lg:flex-shrink-0">
+                    <div class="lg:sticky lg:top-24 space-y-6">
+                        <div class="text-center">
+                            <div class="relative inline-block">
+                                <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="User profile image" class="w-28 h-28 rounded-full border-4 border-zinc-700 mx-auto">
+                                <button class="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full border-2 border-black flex items-center justify-center hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 shadow-lg" title="프로필 편집">
+                                    <i class="fas fa-edit text-white text-xs"></i>
+                                </button>
+                            </div>
+                            <h1 class="text-2xl font-bold text-white mt-4">김민준</h1>
+                            <p class="text-zinc-400 mt-1 text-sm">"단순한 재미를 넘어..."</p>
+                        </div>
+                        <nav id="side-nav" class="flex flex-col">
+                            <a href="#dashboard" data-tab="dashboard" class="side-nav-link active w-full p-3 rounded-lg text-left"><span class="flex items-center gap-3"><i class="fa-solid fa-chart-pie w-5 text-center"></i> 대시보드</span></a>
+                            <div class="side-nav-heading mt-2">활동 기록</div>
+                            <a href="#activity" data-tab="activity" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400"><span class="flex items-center justify-between w-full"><span><i class="fa-solid fa-pen-nib w-5 text-center mr-3"></i>평가 및 리뷰</span><span class="text-xs font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">498</span></span></a>
+                            <div class="side-nav-heading mt-2">취향 보관함</div>
+                            <a href="#collections" data-tab="collections" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400"><span class="flex items-center justify-between w-full"><span><i class="fa-solid fa-bookmark w-5 text-center mr-3"></i>저장한 컬렉션</span><span class="text-xs font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">28</span></span></a>
+                            <a href="#saved-reviews" data-tab="saved-reviews" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400"><span class="flex items-center justify-between w-full"><span><i class="fa-solid fa-pen-to-square w-5 text-center mr-3"></i>저장한 리뷰</span><span class="text-xs font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">18</span></span></a>
+                            <a href="#watchlist" data-tab="watchlist" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400"><span class="flex items-center justify-between w-full"><span><i class="fa-solid fa-heart w-5 text-center mr-3"></i>보고싶어요</span><span class="text-xs font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">120</span></span></a>
+                            <a href="#favorites" data-tab="favorites" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400"><span class="flex items-center justify-between w-full"><span><i class="fa-solid fa-user-group w-5 text-center mr-3"></i>선호 인물</span><span class="text-xs font-medium text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">42</span></span></a>
+                            <hr class="border-zinc-800 my-4">
+                            <a href="#settings" data-tab="settings" class="side-nav-link w-full p-3 rounded-lg text-left text-zinc-400"><span class="flex items-center gap-3"><i class="fa-solid fa-gear w-5 text-center"></i> 설정</span></a>
+                        </nav>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <div class="flex-1 min-w-0">
+                    <div id="dashboard" class="content-section active space-y-16">
+                        
+                        <!-- 1. Overview (Kept from original) -->
+                        <section class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div class="section-card p-6 rounded-2xl relative overflow-hidden">
+                                <i class="fa-solid fa-hourglass-half absolute -right-2 -bottom-2 text-8xl text-white/5"></i>
+                                <h3 class="font-semibold text-zinc-400 text-sm mb-2">총 시청 시간</h3>
+                                <p class="text-4xl font-bold text-purple-400">7,280<span class="text-xl ml-1 text-zinc-500">h</span></p>
+                                <p class="text-xs text-zinc-500 mt-1">상위 5%</p>
+                            </div>
+                            <div class="section-card p-6 rounded-2xl relative overflow-hidden">
+                                <i class="fa-solid fa-film absolute -right-2 -bottom-2 text-8xl text-white/5"></i>
+                                <h3 class="font-semibold text-zinc-400 text-sm mb-2">평가한 작품</h3>
+                                <p class="text-4xl font-bold text-indigo-400">342<span class="text-xl ml-1 text-zinc-500">편</span></p>
+                            </div>
+                            <div class="section-card p-6 rounded-2xl relative overflow-hidden">
+                                <i class="fa-solid fa-star absolute -right-2 -bottom-2 text-8xl text-white/5"></i>
+                                <h3 class="font-semibold text-zinc-400 text-sm mb-2">평균 별점</h3>
+                                <p class="text-4xl font-bold text-yellow-400">4.1<span class="text-xl text-zinc-500">/5</span></p>
+                            </div>
+                            <div class="section-card p-6 rounded-2xl relative overflow-hidden">
+                                <i class="fa-solid fa-pen-nib absolute -right-2 -bottom-2 text-8xl text-white/5"></i>
+                                <h3 class="font-semibold text-zinc-400 text-sm mb-2">작성한 리뷰</h3>
+                                <p class="text-4xl font-bold text-rose-400">156<span class="text-xl ml-1 text-zinc-500">개</span></p>
+                            </div>
+                        </section>
+
+                        <!-- 2. My Persona (NEWLY ADDED) -->
+                        <section class="fade-in" style="animation-delay: 0.2s;">
+                            <div class="gradient-border-card rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
+                                <div class="flex-shrink-0">
+                                    <i class="fa-solid fa-monument text-7xl gradient-text"></i>
+                                </div>
+                                <div class="flex-grow">
+                                    <p class="font-semibold text-zinc-400">My Persona</p>
+                                    <h3 class="text-3xl font-bold text-white mt-1">고뇌하는 철학자</h3>
+                                    <p class="text-zinc-300 text-base mt-4 max-w-xl mx-auto md:mx-0">
+                                        작품에 담긴 깊이 있는 철학과 미학적 성취를 탐험합니다. 대중적인 서사보다는 감독의 실험적인 미학이나, 추상적 개념을 다루는 비선형 서사에 매료됩니다.
+                                    </p>
+                                    <div class="flex flex-wrap gap-2 justify-center md:justify-start mt-5">
+                                        <span class="bg-purple-500/20 text-purple-300 text-xs font-semibold px-3 py-1 rounded-full">#생각할_거리</span>
+                                        <span class="bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-3 py-1 rounded-full">#다크_앤_그리티</span>
+                                        <span class="bg-zinc-500/20 text-zinc-300 text-xs font-semibold px-3 py-1 rounded-full">#1990년대_명작</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- My Universe -->
+                        <section class="fade-in" style="animation-delay: 0.4s;">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="gradient-border-card rounded-2xl p-6 shadow-lg"><h3 class="text-xl font-bold text-white mb-4 text-center">선호 장르</h3><div class="h-80"><canvas id="genreChart"></canvas></div></div>
+                                <div class="gradient-border-card rounded-2xl p-6 shadow-lg">
+                                    <h3 class="text-xl font-bold text-white mb-4 text-center">나의 취향 DNA (Top 6)</h3>
+                                    <div class="space-y-4 pt-2">
+                                        <div class="p-3 rounded-lg bg-zinc-900">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-3">
+                                                    <i class="fas fa-robot text-purple-400 text-lg"></i>
+                                                    <span class="font-semibold text-white">사이버펑크 <span class="text-xs text-purple-300">(SF)</span></span>
+                                                    <div class="tooltip-container">
+                                                        <i class="fas fa-info-circle tooltip-icon text-purple-400 text-xs"></i>
+                                                        <div class="tooltip">미래적 기술과 디스토피아적 사회를 배경으로 한 SF 장르</div>
+                                                    </div>
+                                                </div>
+                                                <span class="font-bold text-purple-400">90%</span>
+                                            </div>
+                                            <div class="w-full bg-zinc-700 rounded-full h-1.5 mt-1"><div class="bg-purple-400 h-1.5 rounded-full" style="width: 90%"></div></div>
+                                        </div>
+                                        <div class="p-3 rounded-lg bg-zinc-900">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-3">
+                                                    <i class="fas fa-brain text-violet-400 text-lg"></i>
+                                                    <span class="font-semibold text-white">심리 스릴러 <span class="text-xs text-violet-300">(스릴러)</span></span>
+                                                    <div class="tooltip-container">
+                                                        <i class="fas fa-info-circle tooltip-icon text-violet-400 text-xs"></i>
+                                                        <div class="tooltip">인물의 심리 상태와 내적 갈등을 중심으로 한 긴장감 있는 스릴러</div>
+                                                    </div>
+                                                </div>
+                                                <span class="font-bold text-violet-400">88%</span>
+                                            </div>
+                                            <div class="w-full bg-zinc-700 rounded-full h-1.5 mt-1"><div class="bg-violet-400 h-1.5 rounded-full" style="width: 88%"></div></div>
+                                        </div>
+                                        <div class="p-3 rounded-lg bg-zinc-900">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-3">
+                                                    <i class="fas fa-user-secret text-slate-400 text-lg"></i>
+                                                    <span class="font-semibold text-white">네오-느와르 <span class="text-xs text-slate-300">(느와르)</span></span>
+                                                    <div class="tooltip-container">
+                                                        <i class="fas fa-info-circle tooltip-icon text-slate-400 text-xs"></i>
+                                                        <div class="tooltip">현대적 느와르 영화의 특징을 가진 어둡고 시니컬한 스타일</div>
+                                                    </div>
+                                                </div>
+                                                <span class="font-bold text-slate-400">85%</span>
+                                            </div>
+                                            <div class="w-full bg-zinc-700 rounded-full h-1.5 mt-1"><div class="bg-slate-400 h-1.5 rounded-full" style="width: 85%"></div></div>
+                                        </div>
+                                        <div class="p-3 rounded-lg bg-zinc-900">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-3">
+                                                    <i class="fas fa-biohazard text-zinc-400 text-lg"></i>
+                                                    <span class="font-semibold text-white">포스트아포칼립스 <span class="text-xs text-zinc-300">(SF)</span></span>
+                                                    <div class="tooltip-container">
+                                                        <i class="fas fa-info-circle tooltip-icon text-zinc-400 text-xs"></i>
+                                                        <div class="tooltip">문명 붕괴 후의 세계를 다루는 디스토피아적 SF 장르</div>
+                                                    </div>
+                                                </div>
+                                                <span class="font-bold text-zinc-400">75%</span>
+                                            </div>
+                                            <div class="w-full bg-zinc-700 rounded-full h-1.5 mt-1"><div class="bg-zinc-400 h-1.5 rounded-full" style="width: 75%"></div></div>
+                                        </div>
+                                        <div class="p-3 rounded-lg bg-zinc-900">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-3">
+                                                    <i class="fas fa-palette text-zinc-500 text-lg"></i>
+                                                    <span class="font-semibold text-white">아트하우스 <span class="text-xs text-zinc-400">(드라마)</span></span>
+                                                    <div class="tooltip-container">
+                                                        <i class="fas fa-info-circle tooltip-icon text-zinc-500 text-xs"></i>
+                                                        <div class="tooltip">예술적 가치와 실험적 표현을 중시하는 독립영화</div>
+                                                    </div>
+                                                </div>
+                                                <span class="font-bold text-zinc-500">70%</span>
+                                            </div>
+                                            <div class="w-full bg-zinc-700 rounded-full h-1.5 mt-1"><div class="bg-zinc-500 h-1.5 rounded-full" style="width: 70%"></div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- My Spectrum -->
+                        <section class="fade-in" style="animation-delay: 0.6s;">
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div class="lg:col-span-1 gradient-border-card rounded-2xl p-6 shadow-lg flex flex-col justify-center text-center">
+                                    <h3 class="text-xl font-bold text-white mb-3">취향 스펙트럼</h3>
+                                    <p class="text-4xl font-bold gradient-text">실험주의자</p>
+                                    <p class="text-zinc-400 mt-1">감독의 독창성과 영상미를 선호</p>
+                                    <div class="w-full mt-4 aspect-square max-w-48 mx-auto">
+                                        <div class="spectrum-map bg-zinc-900/50 rounded-lg h-full w-full relative p-6">
+                                            <div class="spectrum-axis h-full w-px top-0 left-1/2 -ml-px"></div><div class="spectrum-axis w-full h-px top-1/2 -mt-px left-0"></div>
+                                            <span class="absolute top-2 left-1/2 -translate-x-1/2 text-sm text-zinc-400">미학</span><span class="absolute bottom-2 left-1/2 -translate-x-1/2 text-sm text-zinc-400">서사</span>
+                                            <span class="absolute top-1/2 -translate-y-1/2 left-2 text-sm text-zinc-400 -rotate-90">실험성</span><span class="absolute top-1/2 -translate-y-1/2 right-2 text-sm text-zinc-400 -rotate-90">대중성</span>
+                                            <div class="spectrum-dot bg-purple-400 w-5 h-5 rounded-full border-2 border-zinc-900 shadow-lg" style="top: 30%; left: 35%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div class="gradient-border-card rounded-2xl p-6 shadow-lg flex flex-col justify-center text-center"><h3 class="text-xl font-bold text-white mb-3">개봉년도 선호도</h3><p class="text-4xl font-bold gradient-text">2010s</p><p class="text-zinc-400 mt-1">최신작을 가장 선호</p><div class="w-full mt-4 h-40"><canvas id="releaseYearChart"></canvas></div></div>
+                                    <div class="gradient-border-card rounded-2xl p-6 shadow-lg flex flex-col justify-center text-center"><h3 class="text-xl font-bold text-white mb-3">국가별 선호도</h3><p class="text-4xl font-bold gradient-text">미국</p><p class="text-zinc-400 mt-1">북미권 콘텐츠 중심</p><div class="w-full mt-4 h-40"><canvas id="countryChart"></canvas></div></div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- My Critique -->
+                        <section class="fade-in" style="animation-delay: 0.8s;">
+                            <div class="gradient-border-card rounded-2xl p-6">
+                                <h3 class="text-xl font-bold text-white mb-4 text-center">평가 성향: <span class="gradient-text font-semibold">'확신형' 평가자</span></h3>
+                                <div class="h-80"><canvas id="ratingChart"></canvas></div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Other content sections -->
+                    <div id="activity" class="content-section"><h2 class="text-3xl font-bold text-white mb-8">평가 및 리뷰</h2></div>
+                    <div id="collections" class="content-section"><h2 class="text-3xl font-bold text-white mb-8">저장한 컬렉션</h2></div>
+                    <div id="saved-reviews" class="content-section"><h2 class="text-3xl font-bold text-white mb-8">저장한 리뷰</h2></div>
+                    <div id="watchlist" class="content-section"><h2 class="text-3xl font-bold text-white mb-8">보고싶어요</h2></div>
+                    <div id="favorites" class="content-section"><h2 class="text-3xl font-bold text-white mb-8">선호 인물</h2></div>
+                    <div id="settings" class="content-section"><h2 class="text-3xl font-bold text-white mb-8">설정</h2></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = {
+                chartsRendered: false,
+                init() {
+                    this.elements = {
+                        sideNav: document.getElementById('side-nav'),
+                        contentSections: document.querySelectorAll('.content-section'),
+                        tabLinks: document.querySelectorAll('a[data-tab]'),
+                    };
+                    this.addEventListeners();
+                    this.switchTab('dashboard');
+                },
+                addEventListeners() {
+                    this.elements.sideNav.addEventListener('click', (e) => {
+                        const link = e.target.closest('a[data-tab]');
+                        if (link) { e.preventDefault(); this.switchTab(link.dataset.tab); }
+                    });
+                },
+                switchTab(targetId) {
+                    const activeLink = this.elements.sideNav.querySelector(`a[data-tab="${targetId}"]`);
+                    if (!activeLink) return;
+
+                    this.elements.tabLinks.forEach(link => {
+                        link.classList.toggle('active', link === activeLink);
+                        link.classList.toggle('text-zinc-400', link !== activeLink);
+                    });
+                    this.elements.contentSections.forEach(section => {
+                        section.classList.toggle('active', section.id === targetId);
+                    });
+                    
+                    document.title = `MOA | ${activeLink.querySelector('span > span')?.textContent || activeLink.textContent.trim()}`;
+                    
+                    if (targetId === 'dashboard' && !this.chartsRendered) {
+                        this.renderDashboardVisuals();
+                        this.chartsRendered = true;
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                renderDashboardVisuals() {
+                    Chart.register(ChartDataLabels);
+                    const chartTextColor = '#e5e7eb';
+                    const chartGridColor = 'rgba(55, 65, 81, 0.5)';
+                    
+                    const commonChartOptions = {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top', labels: { color: chartTextColor, font: { size: 12 } } } }
+                    };
+
+                    const genreCtx = document.getElementById('genreChart')?.getContext('2d');
+                    if (genreCtx) new Chart(genreCtx, {
+                        type: 'radar',
+                        data: { 
+                            labels: ['#SF', '#스릴러', '#드라마', '#미스터리', '#느와르', '#아트하우스'], 
+                            datasets: [{ 
+                                label: '나의 선호도', 
+                                data: [95, 80, 70, 55, 65, 85], 
+                                backgroundColor: 'rgba(167, 139, 250, 0.2)', 
+                                borderColor: '#a78bfa', 
+                                pointBackgroundColor: '#a78bfa', 
+                                pointBorderColor: '#fff',
+                                pointRadius: 4
+                            }, { 
+                                label: '커뮤니티 평균', 
+                                data: [75, 65, 75, 50, 40, 55], 
+                                backgroundColor: 'rgba(107, 114, 128, 0.05)', 
+                                borderColor: 'rgba(107, 114, 128, 0.3)', 
+                                pointBackgroundColor: 'rgba(107, 114, 128, 0.3)',
+                                pointRadius: 2
+                            }] 
+                        },
+                        options: { 
+                            ...commonChartOptions, 
+                            scales: { 
+                                r: { 
+                                    angleLines: { color: chartGridColor }, 
+                                    grid: { color: chartGridColor }, 
+                                    pointLabels: { 
+                                        color: chartTextColor, 
+                                        font: { size: 12, weight: '500' } 
+                                    }, 
+                                    ticks: { display: false, backdropColor: 'transparent' },
+                                    suggestedMin: 0,
+                                    suggestedMax: 100
+                                } 
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        title: function(context) {
+                                            const labels = ['SF', '스릴러', '드라마', '미스터리', '느와르', '아트하우스'];
+                                            return labels[context[0].dataIndex];
+                                        }
+                                    }
+                                }
+                            }
+                        } 
+                    });
+                    
+                    const ratingCtx = document.getElementById('ratingChart')?.getContext('2d');
+                    if (ratingCtx) new Chart(ratingCtx, {
+                        type: 'bar',
+                        data: { labels: ['1점', '2점', '3점', '4점', '5점'], datasets: [{ label: '평가 비율', data: [1, 4, 15, 45, 35], backgroundColor: ['#4338ca', '#4f46e5', '#6366f1', '#818cf8', '#a78bfa'], borderRadius: 4 }] },
+                        options: { ...commonChartOptions, scales: { y: { beginAtZero: true, grid: { color: chartGridColor }, ticks: { color: chartTextColor, callback: (v) => v + '%' } }, x: { grid: { display: false }, ticks: { color: chartTextColor, font: { size: 14 } } } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: chartTextColor, font: { weight: 'bold' }, formatter: (v) => v + '%' } } }
+                    });
+
+                    const releaseYearCtx = document.getElementById('releaseYearChart')?.getContext('2d');
+                    if (releaseYearCtx) new Chart(releaseYearCtx, {
+                        type: 'line',
+                        data: { labels: ['1970s', '1980s', '1990s', '2000s', '2010s', '2020s'], datasets: [{ label: '선호도', data: [10, 25, 60, 75, 95, 90], fill: true, backgroundColor: 'rgba(129, 140, 248, 0.1)', borderColor: 'rgba(129, 140, 248, 1)', tension: 0.4 }] },
+                        options: { ...commonChartOptions, scales: { y: { display: false }, x: { grid: { color: chartGridColor }, ticks: { color: chartTextColor } } }, plugins: { legend: { display: false } } }
+                    });
+
+                    const countryCtx = document.getElementById('countryChart')?.getContext('2d');
+                    if(countryCtx) new Chart(countryCtx, {
+                        type: 'bar',
+                        data: { labels: ['미국', '한국', '영국', '일본', '기타'], datasets: [{ label: '시청 비중', data: [45, 25, 15, 10, 5], backgroundColor: ['#a78bfa', '#818cf8', '#6366f1', '#4f46e5', '#4338ca'], borderRadius: 4 }] },
+                        options: { ...commonChartOptions, indexAxis: 'y', scales: { y: { grid: { display: false }, ticks: { color: chartTextColor } }, x: { display: false } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', color: chartTextColor, font: { weight: 'bold' }, formatter: (v) => v + '%' } } }
+                    });
+                }
+            };
+            app.init();
+        });
+    </script>
+    
+    <!-- 모바일 GNB -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-md border-t border-zinc-800 md:hidden z-50">
+        <div class="flex items-center justify-around h-16 py-2">
+            <a href="./02 홈화면_리뉴얼V12.html" class="flex flex-col items-center gap-1 text-zinc-500">
+                <i class="fas fa-home text-lg"></i>
+                <span class="text-xs">홈</span>
+            </a>
+            <a href="./04 검색필드_리뉴얼v2.html" class="flex flex-col items-center gap-1 text-zinc-500">
+                <i class="fas fa-search text-base"></i>
+                <span class="text-xs">검색</span>
+            </a>
+            <a href="./08 마이페이지_리뉴얼V5.html" class="flex flex-col items-center gap-1 text-white">
+                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 overflow-hidden">
+                    <img src="./내 프로필 사진/profile.jpg" alt="profile" class="w-full h-full object-cover">
+                </div>
+                <span class="text-xs">MY</span>
+            </a>
+        </div>
+    </nav>
+    
+    <div class="h-20 md:hidden"></div>
+</body>
+</html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>전체 장르 - MOA</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { 
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: linear-gradient(180deg, #000 0%, #0a0514 50%, #000 100%);
+            color: #e5e5e5;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.02em;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md border-b border-zinc-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- 헤더 높이 h-14 -> h-16으로 수정 -->
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-8">
+                    <a href="./02 홈화면_리뉴얼V12.html" class="flex items-center gap-2 flex-shrink-0">
+                        <div class="w-6 h-6 rounded bg-gradient-to-br from-purple-400 to-indigo-500"></div>
+                        <span class="font-bold text-lg text-white">MOA</span>
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex flex-1 justify-center px-8">
+                    <div class="relative w-full max-w-sm">
+                        <!-- 검색창 스타일 수정: h-9->h-10, bg-zinc-900->bg-zinc-800, border-zinc-700->border-zinc-600, placeholder:text-zinc-500->placeholder:text-zinc-400 -->
+                        <input type="text" placeholder="작품, 인물, 컬렉션을 검색해보세요" class="w-full h-10 bg-zinc-800 border border-zinc-600 rounded-lg pl-10 pr-4 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:border-purple-500 transition" onclick="window.location.href='./04 검색필드_리뉴얼v2.html'">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                             <!-- 검색 아이콘 스타일 수정: text-zinc-500->text-zinc-400, text-xs->text-sm -->
+                            <i class="fas fa-search text-zinc-400 text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1">
+                    <button class="md:hidden w-9 h-9 rounded-full hover:bg-zinc-900 flex items-center justify-center transition flex-shrink-0" onclick="window.location.href='./04 검색필드_리뉴얼v2.html'">
+                        <i class="fas fa-search text-sm"></i>
+                    </button>
+                    <button class="w-9 h-9 rounded-full hover:bg-zinc-900 flex items-center justify-center transition flex-shrink-0">
+                        <i class="far fa-bell text-sm"></i>
+                    </button>
+                    <button class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 overflow-hidden flex-shrink-0" onclick="window.location.href='./08 마이페이지_리뉴얼V5.html'">
+                        <img src="./내 프로필 사진/profile.jpg" alt="profile" class="w-full h-full object-cover">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 헤더 높이 변경에 따라 mt-14 -> mt-16으로 수정 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-16">
+        <div class="space-y-8">
+            <!-- Page Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h1 class="text-4xl font-bold text-white">모든 비디오 장르</h1>
+                <div class="relative sm:w-64">
+                    <input type="text" id="genre-filter-input" class="w-full h-9 bg-zinc-900 border border-zinc-700 rounded-lg pl-10 pr-4 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-purple-500 transition" placeholder="장르 검색...">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <i class="fas fa-search text-zinc-500 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Genre Grid - MOA 브랜드 컬러 적용 -->
+            <div id="genre-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- 스포츠 -->
+                <a href="genre_detail.html?genre=스포츠" data-genre="스포츠" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-indigo-500 to-purple-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-400/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-basketball absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">스포츠</span>
+                </a>
+
+                <!-- 로맨틱 코미디 -->
+                <a href="genre_detail.html?genre=로맨틱 코미디" data-genre="로맨틱 코미디" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-pink-500 to-rose-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-heart absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">로맨틱 코미디</span>
+                </a>
+
+                <!-- 공포 -->
+                <a href="genre_detail.html?genre=공포" data-genre="공포" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-slate-600 to-slate-800 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <svg class="absolute -bottom-12 -left-12 w-48 h-48 text-slate-500/50 transition-transform duration-300 group-hover:scale-[1.15]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+                    </svg>
+                    <i class="fa-solid fa-ghost absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">공포</span>
+                </a>
+
+                <!-- 애니메이션 -->
+                <a href="genre_detail.html?genre=애니메이션" data-genre="애니메이션" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-violet-500 to-purple-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-full h-full opacity-20 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 2px); background-size: 2rem 2rem;"></div>
+                    <i class="fa-solid fa-dragon absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">애니메이션</span>
+                </a>
+
+                <!-- 미스터리 -->
+                <a href="genre_detail.html?genre=미스터리" data-genre="미스터리" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-indigo-600 to-blue-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-400/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-question absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">미스터리</span>
+                </a>
+
+                <!-- 한국 드라마 -->
+                <a href="genre_detail.html?genre=한국 드라마" data-genre="한국 드라마" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-purple-500 to-pink-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-tv absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">한국 드라마</span>
+                </a>
+
+                <!-- 미국 애니메이션 -->
+                <a href="genre_detail.html?genre=미국 애니메이션" data-genre="미국 애니메이션" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-blue-500 to-indigo-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <svg class="absolute -bottom-12 -left-12 w-48 h-48 text-indigo-400/50 transition-transform duration-300 group-hover:scale-[1.15]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+                    </svg>
+                    <i class="fa-solid fa-film absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">미국 애니메이션</span>
+                </a>
+
+                <!-- 범죄 -->
+                <a href="genre_detail.html?genre=범죄" data-genre="범죄" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-zinc-700 to-zinc-900 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-full h-full opacity-20 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 2px); background-size: 2rem 2rem;"></div>
+                    <i class="fa-solid fa-fingerprint absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">범죄</span>
+                </a>
+
+                <!-- 퀴어 -->
+                <a href="genre_detail.html?genre=퀴어" data-genre="퀴어" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-fuchsia-500 to-violet-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-violet-400/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-rainbow absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">퀴어</span>
+                </a>
+
+                <!-- 스릴러 -->
+                <a href="genre_detail.html?genre=스릴러" data-genre="스릴러" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-red-600 to-rose-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-bolt absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">스릴러</span>
+                </a>
+
+                <!-- 일본 애니메이션 -->
+                <a href="genre_detail.html?genre=일본 애니메이션" data-genre="일본 애니메이션" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-purple-600 to-indigo-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <svg class="absolute -bottom-12 -left-12 w-48 h-48 text-purple-400/50 transition-transform duration-300 group-hover:scale-[1.15]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+                    </svg>
+                    <i class="fa-solid fa-torii-gate absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">일본 애니메이션</span>
+                </a>
+
+                <!-- 블록버스터 -->
+                <a href="genre_detail.html?genre=블록버스터" data-genre="블록버스터" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-cyan-600 to-blue-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-full h-full opacity-20 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 2px); background-size: 2rem 2rem;"></div>
+                    <i class="fa-solid fa-bomb absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">블록버스터</span>
+                </a>
+
+                <!-- 추리 -->
+                <a href="genre_detail.html?genre=추리" data-genre="추리" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-blue-600 to-indigo-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-400/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-magnifying-glass absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">추리</span>
+                </a>
+
+                <!-- 슈퍼히어로 -->
+                <a href="genre_detail.html?genre=슈퍼히어로" data-genre="슈퍼히어로" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-amber-500 to-orange-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-mask absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">슈퍼히어로</span>
+                </a>
+
+                <!-- 코미디 -->
+                <a href="genre_detail.html?genre=코미디" data-genre="코미디" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-yellow-500 to-amber-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <svg class="absolute -bottom-12 -left-12 w-48 h-48 text-yellow-400/50 transition-transform duration-300 group-hover:scale-[1.15]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+                    </svg>
+                    <i class="fa-solid fa-masks-theater absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">코미디</span>
+                </a>
+
+                <!-- 예능 -->
+                <a href="genre_detail.html?genre=예능" data-genre="예능" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-pink-500 to-fuchsia-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-full h-full opacity-20 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 2px); background-size: 2rem 2rem;"></div>
+                    <i class="fa-solid fa-microphone-lines absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">예능</span>
+                </a>
+
+                <!-- 액션 -->
+                <a href="genre_detail.html?genre=액션" data-genre="액션" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-orange-600 to-red-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-500/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-explosion absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">액션</span>
+                </a>
+
+                <!-- SF -->
+                <a href="genre_detail.html?genre=SF" data-genre="SF" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-teal-500 to-cyan-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-rocket absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">SF</span>
+                </a>
+
+                <!-- 판타지 -->
+                <a href="genre_detail.html?genre=판타지" data-genre="판타지" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-emerald-500 to-teal-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <svg class="absolute -bottom-12 -left-12 w-48 h-48 text-emerald-400/50 transition-transform duration-300 group-hover:scale-[1.15]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+                    </svg>
+                    <i class="fa-solid fa-wand-sparkles absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">판타지</span>
+                </a>
+
+                <!-- 로맨스 -->
+                <a href="genre_detail.html?genre=로맨스" data-genre="로맨스" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-rose-500 to-pink-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-full h-full opacity-20 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 2px); background-size: 2rem 2rem;"></div>
+                    <i class="fa-solid fa-heart-pulse absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">로맨스</span>
+                </a>
+
+                <!-- 일본 드라마 -->
+                <a href="genre_detail.html?genre=일본 드라마" data-genre="일본 드라마" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-violet-600 to-purple-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-violet-500/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-torii-gate absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">일본 드라마</span>
+                </a>
+
+                <!-- 시대극 -->
+                <a href="genre_detail.html?genre=시대극" data-genre="시대극" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-amber-600 to-yellow-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-crown absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">시대극</span>
+                </a>
+
+                <!-- 모험 -->
+                <a href="genre_detail.html?genre=모험" data-genre="모험" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-lime-500 to-green-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-lime-400/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-compass absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">모험</span>
+                </a>
+
+                <!-- 중국 드라마 -->
+                <a href="genre_detail.html?genre=중국 드라마" data-genre="중국 드라마" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-red-500 to-orange-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-full h-full opacity-20 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 2px); background-size: 2rem 2rem;"></div>
+                    <i class="fa-solid fa-dragon absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">중국 드라마</span>
+                </a>
+
+                <!-- B급 -->
+                <a href="genre_detail.html?genre=B급" data-genre="B급" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-zinc-600 to-slate-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-zinc-400/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-skull absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">B급</span>
+                </a>
+
+                <!-- 단편 -->
+                <a href="genre_detail.html?genre=단편" data-genre="단편" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-sky-500 to-blue-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-film absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">단편</span>
+                </a>
+
+                <!-- 미국 드라마 -->
+                <a href="genre_detail.html?genre=미국 드라마" data-genre="미국 드라마" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-indigo-600 to-violet-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-400/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-flag-usa absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">미국 드라마</span>
+                </a>
+
+                <!-- 웹드라마 -->
+                <a href="genre_detail.html?genre=웹드라마" data-genre="웹드라마" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-purple-600 to-fuchsia-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute top-0 right-0 w-full h-full opacity-20 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 2px); background-size: 2rem 2rem;"></div>
+                    <i class="fa-solid fa-laptop absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">웹드라마</span>
+                </a>
+
+                <!-- 다큐멘터리 -->
+                <a href="genre_detail.html?genre=다큐멘터리" data-genre="다큐멘터리" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-slate-500 to-zinc-600 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-slate-400/30 rounded-full transition-transform duration-300 group-hover:scale-[1.15]"></div>
+                    <i class="fa-solid fa-camera absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">다큐멘터리</span>
+                </a>
+
+                <!-- 한국 애니메이션 -->
+                <a href="genre_detail.html?genre=한국 애니메이션" data-genre="한국 애니메이션" class="genre-card group relative aspect-[16/10] rounded-xl p-4 flex items-end bg-gradient-to-br from-fuchsia-600 to-pink-700 hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute h-full w-full opacity-30 transition-transform duration-300 group-hover:scale-[1.15]" style="background-image: repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 10px);"></div>
+                    <i class="fa-solid fa-palette absolute top-4 right-4 text-4xl text-white/20 -rotate-12 group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 z-10"></i>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <span class="relative text-lg font-bold text-white">한국 애니메이션</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript for genre filtering -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterInput = document.getElementById('genre-filter-input');
+            const genreCards = document.querySelectorAll('.genre-card');
+
+            filterInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                genreCards.forEach(card => {
+                    const genreName = card.getAttribute('data-genre').toLowerCase();
+                    if (genreName.includes(searchTerm)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- ===== 최적 푸터 시작 ===== -->
+    <footer class="border-t border-zinc-800/50 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <!-- 평가 카운트 - improved 버전의 배지 디자인 -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900/50 rounded-xl border border-zinc-800">
+                    <i class="fas fa-star text-purple-400 text-base"></i>
+                    <span class="text-sm text-zinc-300">지금까지</span>
+                    <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">647,152,894</span>
+                    <span class="text-sm text-zinc-300">개의 평가가 쌓였어요</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row justify-between gap-8">
+                <!-- 왼쪽 정보 영역 -->
+                <div class="space-y-4 flex-1">
+                    <!-- 상단 약관 링크 -->
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">서비스 이용약관</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">개인정보 처리방침</a>
+                        <span class="text-zinc-700">•</span>
+                        <a href="#" class="text-zinc-400 hover:text-purple-400 transition">회사 안내</a>
+                    </div>
+
+                    <!-- 문의 정보 -->
+                    <div class="space-y-1.5 text-xs text-zinc-500">
+                        <div>
+                            <span>고객센터</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:cs@moa.com" class="hover:text-purple-400 transition">cs@moa.com</a>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <span>02-123-4567</span>
+                        </div>
+                        <div>
+                            <span>광고 문의</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="mailto:ad@moa.com" class="hover:text-purple-400 transition">ad@moa.com</a>
+                        </div>
+                        <div>
+                            <span>제휴 및 대외 협력</span>
+                            <span class="text-zinc-700 mx-2">|</span>
+                            <a href="https://moa.team/contact" class="hover:text-purple-400 transition">moa.team/contact</a>
+                        </div>
+                    </div>
+
+                    <!-- 회사 정보 & 저작권 -->
+                    <div class="space-y-1.5">
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-600">
+                            <span>(주)모아</span>
+                            <span>•</span>
+                            <span>대표 김모아</span>
+                            <span>•</span>
+                            <span>사업자등록번호 123-45-67890</span>
+                            <span>•</span>
+                            <span>서울시 강남구 테헤란로 417</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 오른쪽 언어 & 소셜 영역 -->
+                <div class="flex flex-col items-start lg:items-end gap-4 lg:gap-6">
+                    <!-- 언어 선택 -->
+                    <div class="relative">
+                        <select class="appearance-none bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 hover:bg-zinc-800 transition-all cursor-pointer pr-10 font-medium">
+                            <option value="ko" selected>한국어</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                        </select>
+                        <i class="fas fa-chevron-down text-xs text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                    
+                    <!-- 소셜 아이콘 -->
+                    <div class="flex items-center gap-3">
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-purple-500/10 border border-zinc-700/50 hover:border-purple-500/50 flex items-center justify-center transition-all group" aria-label="Facebook">
+                            <i class="fa-brands fa-facebook text-base text-zinc-400 group-hover:text-purple-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-indigo-500/10 border border-zinc-700/50 hover:border-indigo-500/50 flex items-center justify-center transition-all group" aria-label="Twitter">
+                            <i class="fa-brands fa-twitter text-base text-zinc-400 group-hover:text-indigo-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-pink-500/10 border border-zinc-700/50 hover:border-pink-500/50 flex items-center justify-center transition-all group" aria-label="Instagram">
+                            <i class="fa-brands fa-instagram text-base text-zinc-400 group-hover:text-pink-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-zinc-800/50 hover:bg-red-500/10 border border-zinc-700/50 hover:border-red-500/50 flex items-center justify-center transition-all group" aria-label="YouTube">
+                            <i class="fa-brands fa-youtube text-base text-zinc-400 group-hover:text-red-400 transition-colors"></i>
+                        </a>
+                    </div>
+
+                    <!-- 저작권 - 우측 하단 -->
+                    <div class="text-xs text-zinc-600 whitespace-nowrap">
+                        © 2025 MOA, Inc. All rights reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- ===== 최적 푸터 끝 ===== -->
+</body>
+</html>

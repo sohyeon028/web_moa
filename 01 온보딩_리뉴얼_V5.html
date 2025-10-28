@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MOA | 최고의 취향 분석 (Final Polish)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background: #000; letter-spacing: -0.02em; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        .gradient-text { background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .is-rated .rated-badge { opacity: 1; transform: scale(1); }
+        .rating-container { display: inline-flex; direction: rtl; }
+        .rating-container input[type="radio"] { display: none; }
+        .rating-container label { cursor: pointer; width: 0.75rem; height: 1.5rem; line-height: 1.5rem; font-size: 1.5rem; color: #3f3f46; overflow: hidden; transition: color 0.15s ease-in-out, transform 0.1s; position: relative; }
+        .rating-container label:hover { transform: scale(1.2); }
+        .rating-container label i { position: absolute; top: 0; left: 0; width: 1.5rem; text-align: center; }
+        .rating-container label:nth-of-type(odd) i { left: -0.75rem; }
+        .rating-container input[type="radio"]:checked ~ label, .rating-container label:hover ~ label { color: #facc15; }
+        .grid-card.rated-animation .poster-container { animation: subtle-confirm 0.4s ease-out; }
+        @keyframes subtle-confirm { 50% { border-color: #a78bfa; } }
+        
+        .milestone-track { display: flex; position: relative; height: 60px; align-items: flex-start; }
+        .milestone-track-bg, .milestone-track-progress { position: absolute; top: 12px; left: 14px; right: 14px; height: 4px; border-radius: 2px; }
+        .milestone-track-bg { width: calc(100% - 28px); background-color: #27272a; }
+        .milestone-track-progress { width: 0; background: linear-gradient(90deg, #a78bfa, #818cf8); transition: width 0.3s ease; }
+        
+        .milestone { text-align: center; color: #3f3f46; transition: color 0.3s ease; position: absolute; width: 80px; }
+        .milestone-icon-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #3f3f46; background-color: #000; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; transition: all 0.3s ease; z-index: 1; }
+        .milestone-label { font-size: 0.75rem; font-weight: 500; }
+        .milestone-reward { font-size: 0.75rem; font-weight: 600; }
+        
+        .milestone.active { color: #a1a1aa; }
+        .milestone.active .milestone-icon-wrapper { border-color: #a1a1aa; }
+
+        .milestone.completed { color: #e5e5e5; }
+        .milestone.completed .milestone-icon-wrapper { border-color: #a78bfa; background: linear-gradient(135deg, #a78bfa, #818cf8); color: #fff; transform: scale(1.1); }
+        .milestone.completed .milestone-reward { color: #a78bfa; }
+
+        #analysis-container { position: relative; width: 100%; height: 300px; overflow: hidden; }
+        #analysis-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .analysis-core { position: absolute; top: 50%; left: 50%; width: 80px; height: 80px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, #a78bfa 0%, #818cf8 100%); box-shadow: 0 0 30px #a78bfa, 0 0 60px #818cf8; transition: all 1.5s ease-in-out; }
+        .analysis-core.stage-1 { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+        .analysis-core.stage-2 { transform: translate(-50%, -50%) scale(1.0); opacity: 1.0; }
+        .analysis-core.stage-3 { transform: translate(-50%, -50%) scale(1.2); box-shadow: 0 0 50px #a78bfa, 0 0 100px #818cf8, 0 0 150px #fff; }
+    </style>
+</head>
+<body class="bg-black text-zinc-400">
+    <header class="w-full max-w-5xl mx-auto py-6 px-4 flex items-center justify-between">
+        <div class="flex items-center gap-3"><a href="./02 홈화면_리뉴얼V12.html" class="flex items-center gap-3"><img src="./logo.svg" alt="MOA" class="h-5 w-auto"></a></div>
+    </header>
+    <main class="w-full max-w-5xl mx-auto px-4 pb-32">
+        <div id="step1" class="text-center space-y-8 py-16">
+            <div class="space-y-4"><i class="fa-solid fa-wand-magic-sparkles text-5xl gradient-text"></i><h1 class="text-4xl md:text-5xl font-bold text-white">인생 작품을 찾아드릴게요</h1><p class="text-lg text-zinc-400 max-w-md mx-auto">몇 편의 작품에 별점을 매겨 자신의 숨겨진 취향을 알아보세요.</p></div>
+            <div class="flex flex-col items-center gap-4"><button id="start-btn" class="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold h-14 px-8 rounded-lg text-lg transition-transform hover:scale-105 w-full max-w-xs">취향 분석 시작하기</button><button id="skip-onboarding-btn" class="text-zinc-400 hover:text-white font-medium text-sm transition">나중에 할게요</button></div>
+        </div>
+        <div id="step2" class="hidden">
+            <div class="sticky top-0 z-30 bg-black/80 backdrop-blur-md pt-4 pb-6 -mx-4 px-4">
+                <div class="max-w-3xl mx-auto space-y-4">
+                    <div class="text-center"><h2 class="text-3xl font-bold text-white">회원님의 취향을 알려주세요</h2></div>
+                    <div class="relative"><input type="search" id="search-input" placeholder="알고 있는 작품을 검색해서 평가해보세요" class="w-full h-12 bg-zinc-900 border border-zinc-700 rounded-lg pl-10 pr-4 text-white placeholder:text-zinc-500 focus:outline-none focus:border-purple-500 transition"><i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i></div>
+                    <div class="space-y-3 pt-2">
+                        <div class="flex justify-between items-center text-sm px-1">
+                            <p class="font-medium text-white">평가한 작품: <span id="rated-count">0</span>개</p>
+                            <p id="rating-goal-text" class="text-zinc-400 font-medium text-right min-h-[20px] transition-all duration-300"></p>
+                        </div>
+                        <div id="milestone-track-container" class="milestone-track">
+                            <div class="milestone-track-bg"></div>
+                            <div id="milestone-track-progress" class="milestone-track-progress"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="movie-grid" class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10 mt-8"></div>
+            <div id="loader-container" class="h-24 flex justify-center items-center"></div>
+            <div class="fixed bottom-0 left-0 right-0 z-20 bg-black/80 backdrop-blur-md border-t border-zinc-800">
+                <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+                    <button id="exit-onboarding-btn" class="text-zinc-400 hover:text-white text-sm font-medium transition">건너뛰기</button>
+                    <button id="next-to-ott-btn" class="bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold h-12 px-8 rounded-lg text-lg transition-all">취향 분석 시작</button>
+                </div>
+            </div>
+        </div>
+        <div id="step3" class="hidden">
+            <div class="text-center max-w-2xl mx-auto py-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-2">어떤 OTT를 구독하고 계신가요?</h2>
+                <p class="text-zinc-400 mb-8">구독 중인 OTT를 선택하면 해당 플랫폼의 작품을 우선적으로 추천해드려요.</p>
+                <div id="ott-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8"></div>
+                <div class="flex justify-center items-center gap-4">
+                    <button id="back-to-step2-btn" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold h-12 px-8 rounded-lg text-lg">이전</button>
+                    <button id="finish-btn" class="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold h-12 px-8 rounded-lg text-lg">분석 완료하기</button>
+                </div>
+            </div>
+        </div>
+        <div id="step_loading" class="hidden">
+            <div class="text-center max-w-2xl mx-auto py-24 flex flex-col items-center justify-center gap-8">
+                <div id="analysis-container">
+                    <canvas id="analysis-canvas"></canvas>
+                    <div id="analysis-core" class="analysis-core"></div>
+                </div>
+                <div class="space-y-2">
+                    <h2 class="text-2xl font-bold text-white">회원님의 취향을 분석하고 있어요</h2>
+                    <p id="analysis-text" class="text-zinc-400 transition-opacity duration-500 min-h-[24px]"></p>
+                </div>
+            </div>
+        </div>
+        <div id="step_done" class="hidden">
+            <div class="text-center space-y-8 py-16">
+                <i class="fa-solid fa-party-popper text-5xl gradient-text"></i><h1 class="text-4xl md:text-5xl font-bold text-white">취향 분석 완료!</h1><p class="text-lg text-zinc-400 max-w-md mx-auto">이제 MOA가 회원님의 취향에 딱 맞는 작품들을 추천해드릴게요.</p><button id="go-home-btn" class="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold h-14 px-8 rounded-lg text-lg transition-transform hover:scale-105">홈으로 가기</button>
+            </div>
+        </div>
+        <div id="step_skipped" class="hidden text-center space-y-8 py-16">
+            <i class="fa-solid fa-rocket text-5xl gradient-text"></i><h1 class="text-4xl md:text-5xl font-bold text-white">MOA에 오신 것을 환영합니다!</h1><p class="text-lg text-zinc-400 max-w-md mx-auto">정확한 추천을 원하시면, 언제든지 마이페이지에서 취향 분석을 시작할 수 있어요.</p><button id="go-home-from-skip-btn" class="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold h-14 px-8 rounded-lg text-lg transition-transform hover:scale-105">홈으로 둘러보기</button>
+        </div>
+    </main>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const steps = { step1: document.getElementById('step1'), step2: document.getElementById('step2'), step3: document.getElementById('step3'), step_loading: document.getElementById('step_loading'), step_done: document.getElementById('step_done'), step_skipped: document.getElementById('step_skipped') };
+        const buttons = { start: document.getElementById('start-btn'), skipOnboarding: document.getElementById('skip-onboarding-btn'), exitOnboarding: document.getElementById('exit-onboarding-btn'), nextToOtt: document.getElementById('next-to-ott-btn'), backToStep2: document.getElementById('back-to-step2-btn'), finish: document.getElementById('finish-btn'), goHome: document.getElementById('go-home-btn'), goHomeFromSkip: document.getElementById('go-home-from-skip-btn') };
+        const progressEls = { count: document.getElementById('rated-count'), goalText: document.getElementById('rating-goal-text'), trackProgress: document.getElementById('milestone-track-progress') };
+        const milestoneTrackContainer = document.getElementById('milestone-track-container');
+        const movieGrid = document.getElementById('movie-grid');
+        const loaderContainer = document.getElementById('loader-container');
+        const searchInput = document.getElementById('search-input');
+        
+        let movieRatings = {};
+        let selectedOTTs = [];
+        let isLoading = false;
+        let currentPage = 1;
+        
+        const milestones = [
+            { count: 20,  icon: 'fa-solid fa-lightbulb',     label: '취향 분석 시작' },
+            { count: 50,  icon: 'fa-solid fa-star-shooting', label: '정확한 추천' },
+            { count: 100, icon: 'fa-solid fa-gem',           label: '인생작 발굴' }
+        ];
+
+        // TMDB API 키 설정 방법:
+        // 1. https://www.themoviedb.org/settings/api 에서 계정 생성 후 API 키 발급
+        // 2. 아래 YOUR_TMDB_API_KEY를 실제 API 키로 교체하세요
+        const TMDB_API_KEY = 'bfb9f9c2729ef77fe6568e19571d1746';
+        const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+        const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w400';
+        
+        // 확실히 포스터가 있는 최고 유명 작품들만
+        const famousMovies = [
+            // 한국 최고 인기 작품 (포스터 확실)
+            {id: 1, title: "기생충", poster_path: "/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg", release_date: "2019-05-30", vote_average: 8.5, popularity: 1000},
+            {id: 2, title: "오징어 게임", poster_path: "/dDlEmu3EZ0Pgg93K2SVNLCjCSvE.jpg", release_date: "2021-09-17", vote_average: 8.1, popularity: 950},
+            
+            // 해외 최고 인기 작품 (포스터 확실)
+            {id: 3, title: "어벤져스: 엔드게임", poster_path: "/or06FN3Dka5tukK1e9sl16pB3iy.jpg", release_date: "2019-04-24", vote_average: 8.4, popularity: 80},
+            {id: 4, title: "어벤져스: 인피니티 워", poster_path: "/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg", release_date: "2018-04-25", vote_average: 8.2, popularity: 70},
+            {id: 5, title: "스파이더맨: 노 웨이 홈", poster_path: "/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", release_date: "2021-12-15", vote_average: 8.1, popularity: 60},
+            {id: 6, title: "인터스텔라", poster_path: "/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg", release_date: "2014-11-05", vote_average: 8.6, popularity: 50},
+            {id: 7, title: "다크 나이트", poster_path: "/qJ2tW6WMUDux911r6m7haRef0WH.jpg", release_date: "2008-07-16", vote_average: 8.5, popularity: 40},
+            {id: 8, title: "인셉션", poster_path: "/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg", release_date: "2010-07-15", vote_average: 8.4, popularity: 30},
+            {id: 9, title: "라라랜드", poster_path: "/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg", release_date: "2016-12-09", vote_average: 8.0, popularity: 20},
+            {id: 10, title: "어벤져스", poster_path: "/RYMX2wcKCBAr24UyPD7xwmjaTn.jpg", release_date: "2012-04-25", vote_average: 7.7, popularity: 15},
+            {id: 11, title: "어벤져스: 에이지 오브 울트론", poster_path: "/4ssDuvEDkSArWEdyBl2X5EHvYKU.jpg", release_date: "2015-04-22", vote_average: 7.3, popularity: 5},
+            
+            // 추가 최고 유명 작품들
+            {id: 12, title: "쇼생크 탈출", poster_path: "/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg", release_date: "1994-09-23", vote_average: 8.7, popularity: 4},
+            {id: 13, title: "타이타닉", poster_path: "/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg", release_date: "1997-12-19", vote_average: 7.9, popularity: 3},
+            {id: 14, title: "아바타", poster_path: "/kyeqWdyUXW608qlYkRqosgbbJyK.jpg", release_date: "2009-12-18", vote_average: 7.6, popularity: 2},
+            {id: 15, title: "스타워즈: 새로운 희망", poster_path: "/6FfCtAuVAW8XJjZ7eWeLibRLWTw.jpg", release_date: "1977-05-25", vote_average: 8.2, popularity: 1},
+            
+            // 더 많은 유명 작품들 (16-30)
+            {id: 16, title: "대부", poster_path: "/3bhkrj58Vtu7enYsRolD1fZdja1.jpg", release_date: "1972-03-14", vote_average: 8.7, popularity: 0.9},
+            {id: 17, title: "포레스트 검프", poster_path: "/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg", release_date: "1994-06-23", vote_average: 8.5, popularity: 0.8},
+            {id: 18, title: "매트릭스", poster_path: "/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg", release_date: "1999-03-30", vote_average: 8.2, popularity: 0.7},
+            {id: 19, title: "백 투 더 퓨처", poster_path: "/fNOH9f1aA7XRTzl1sAOx9iF553Q.jpg", release_date: "1985-07-03", vote_average: 8.1, popularity: 0.6},
+            {id: 20, title: "라이언 일병 구하기", poster_path: "/uqx37cS8cpHg8U35f9U5IBlrCV3.jpg", release_date: "1998-07-24", vote_average: 8.0, popularity: 0.4},
+            {id: 21, title: "센과 치히로의 행방불명", poster_path: "/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg", release_date: "2001-07-20", vote_average: 8.6, popularity: 0.2},
+            {id: 22, title: "너의 이름은.", poster_path: "/q719jXXEzOoYaps6babgKnONONX.jpg", release_date: "2016-08-26", vote_average: 8.2, popularity: 0.09},
+            {id: 23, title: "토이 스토리", poster_path: "/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg", release_date: "1995-10-30", vote_average: 8.0, popularity: 0.05},
+            
+            // 더 많은 유명 작품들 추가 (포스터 확실한 것들만)
+            {id: 24, title: "가디언즈 오브 갤럭시", poster_path: "/r7vmZjiyZw9rpJMQJdXpjgiCOk9.jpg", release_date: "2014-07-30", vote_average: 7.9, popularity: 0.004},
+            {id: 25, title: "블랙 팬서", poster_path: "/uxzzxijgPIY7slzFvMotPv8wjKA.jpg", release_date: "2018-02-13", vote_average: 7.3, popularity: 0.002},
+            {id: 26, title: "조커", poster_path: "/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg", release_date: "2019-10-02", vote_average: 8.2, popularity: 0.0009},
+            {id: 27, title: "매드 맥스: 분노의 도로", poster_path: "/hA2ple9q4qnwxp3hKVNhroipsir.jpg", release_date: "2015-05-13", vote_average: 7.6, popularity: 0.0008},
+            {id: 28, title: "펄프 픽션", poster_path: "/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg", release_date: "1994-09-10", vote_average: 8.9, popularity: 0.0007},
+            {id: 29, title: "좋은 친구들", poster_path: "/aKuFiU82s5ISJpGZp7YkIr3kCUd.jpg", release_date: "1990-09-12", vote_average: 8.7, popularity: 0.0006},
+            {id: 30, title: "대부 2", poster_path: "/3bhkrj58Vtu7enYsRolD1fZdja1.jpg", release_date: "1974-12-12", vote_average: 9.0, popularity: 0.0005},
+            
+            // 더 많은 유명 작품들 (중복 제거, 포스터 확실한 것들만)
+            {id: 31, title: "더 글로리", poster_path: "/tGtm1Oj4rQ4y2ZvqFtLdMhOqGlN.jpg", release_date: "2022-12-30", vote_average: 8.0, popularity: 0.00007},
+            {id: 32, title: "올드보이", poster_path: "/rIZX6X0MIhyEejkgau82R0bD7M0.jpg", release_date: "2003-11-21", vote_average: 8.3, popularity: 0.00006},
+            {id: 33, title: "극한직업", poster_path: "/2bXbqYdUdNVa8VIWXVfclP2ICtT.jpg", release_date: "2019-01-23", vote_average: 7.9, popularity: 0.00005},
+            {id: 34, title: "킹덤", poster_path: "/56v2KjBlU4XaOv9rVYEQypROD7P.jpg", release_date: "2019-01-25", vote_average: 8.2, popularity: 0.00004},
+            {id: 35, title: "사랑의 불시착", poster_path: "/5ZY2kltVxAT3An9UeFprQfGdjz.jpg", release_date: "2019-12-14", vote_average: 8.7, popularity: 0.00003},
+            {id: 36, title: "범죄도시4", poster_path: "/dZbLqRjjiiNCpTYzhzL2NMvz4J0.jpg", release_date: "2024-04-24", vote_average: 7.8, popularity: 0.00002},
+            {id: 37, title: "응답하라 1988", poster_path: "/l6hQWH9eDksNJNiXWYRkWqikOdu.jpg", release_date: "2015-11-06", vote_average: 9.0, popularity: 0.00001},
+            {id: 38, title: "슬기로운 의사생활", poster_path: "/2uH4q1x3pNdJIizVnlr4kFH2aV.jpg", release_date: "2020-03-12", vote_average: 8.9, popularity: 0.000009},
+            {id: 39, title: "나의 아저씨", poster_path: "/2uH4q1x3pNdJIizVnlr4kFH2aV.jpg", release_date: "2018-03-21", vote_average: 8.8, popularity: 0.000008},
+            {id: 40, title: "시그널", poster_path: "/l6hQWH9eDksNJNiXWYRkWqikOdu.jpg", release_date: "2016-01-22", vote_average: 8.4, popularity: 0.000007},
+            {id: 41, title: "비밀의 숲", poster_path: "/2uH4q1x3pNdJIizVnlr4kFH2aV.jpg", release_date: "2017-06-10", vote_average: 8.6, popularity: 0.000006},
+            {id: 42, title: "미스터 션샤인", poster_path: "/2uH4q1x3pNdJIizVnlr4kFH2aV.jpg", release_date: "2018-07-07", vote_average: 8.5, popularity: 0.000005},
+            {id: 43, title: "동백꽃 필 무렵", poster_path: "/2uH4q1x3pNdJIizVnlr4kFH2aV.jpg", release_date: "2019-10-02", vote_average: 8.3, popularity: 0.000004},
+            {id: 44, title: "헤어질 결심", poster_path: "/2uH4q1x3pNdJIizVnlr4kFH2aV.jpg", release_date: "2022-06-29", vote_average: 7.8, popularity: 0.000003}
+        ];
+        
+        const tmdbAPI = {
+            async fetchPopularMovies(page = 1) {
+                // 첫 페이지는 고정된 유명 작품들부터 표시
+                if (page === 1) {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            const movies = famousMovies.slice(0, 20);
+                            resolve({
+                                movies: movies,
+                                total_pages: 10 // 더 많은 페이지가 있다고 가정
+                            });
+                        }, 500);
+                    });
+                }
+                
+                // 2페이지부터는 API에서 가져오기
+                try {
+                    const [movieResponse, tvResponse] = await Promise.all([
+                        fetch(`${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&language=ko-KR&page=${page}`),
+                        fetch(`${TMDB_BASE_URL}/tv/popular?api_key=${TMDB_API_KEY}&language=ko-KR&page=${page}`)
+                    ]);
+                    
+                    if (!movieResponse.ok || !tvResponse.ok) throw new Error('API 호출 실패');
+                    
+                    const movieData = await movieResponse.json();
+                    const tvData = await tvResponse.json();
+                    
+                    // 영화와 드라마를 합치고 필터링
+                    const allContent = [
+                        ...movieData.results.map(movie => ({
+                            id: movie.id,
+                            title: movie.title,
+                            poster_path: movie.poster_path,
+                            release_date: movie.release_date,
+                            vote_average: movie.vote_average,
+                            popularity: movie.popularity,
+                            type: 'movie'
+                        })),
+                        ...tvData.results.map(tv => ({
+                            id: tv.id,
+                            title: tv.name,
+                            poster_path: tv.poster_path,
+                            release_date: tv.first_air_date,
+                            vote_average: tv.vote_average,
+                            popularity: tv.popularity,
+                            type: 'tv'
+                        }))
+                    ];
+                    
+                    // 포스터가 있고 인기도가 높은 작품만 필터링
+                    const filteredContent = allContent
+                        .filter(item => item.poster_path && item.vote_average >= 6.0 && item.popularity >= 10)
+                        .sort((a, b) => b.popularity - a.popularity)
+                        .slice(0, 20);
+                    
+                    return {
+                        movies: filteredContent,
+                        total_pages: Math.max(movieData.total_pages, tvData.total_pages)
+                    };
+                } catch (error) {
+                    console.error('TMDB API 오류:', error);
+                    // API 실패 시 고정된 작품들로 fallback
+                    const startIndex = ((page - 1) * 20) % famousMovies.length;
+                    const endIndex = startIndex + 20;
+                    const movies = famousMovies.slice(startIndex, endIndex);
+                    return {
+                        movies: movies,
+                        total_pages: 10
+                    };
+                }
+            },
+            
+            async searchMovies(query, page = 1) {
+                // 고정된 30개 작품에서 먼저 검색
+                const filteredFamousMovies = famousMovies.filter(movie => 
+                    movie.title.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                if (filteredFamousMovies.length > 0) {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            const startIndex = (page - 1) * 20;
+                            const endIndex = startIndex + 20;
+                            const movies = filteredFamousMovies.slice(startIndex, endIndex);
+                            resolve({
+                                movies: movies,
+                                total_pages: Math.ceil(filteredFamousMovies.length / 20)
+                            });
+                        }, 500);
+                    });
+                }
+                
+                // 고정된 작품에서 검색 결과가 없으면 API에서 검색
+                try {
+                    const [movieResponse, tvResponse] = await Promise.all([
+                        fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(query)}&page=${page}`),
+                        fetch(`${TMDB_BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(query)}&page=${page}`)
+                    ]);
+                    
+                    if (!movieResponse.ok || !tvResponse.ok) throw new Error('검색 API 호출 실패');
+                    
+                    const movieData = await movieResponse.json();
+                    const tvData = await tvResponse.json();
+                    
+                    // 영화와 드라마를 합치고 필터링
+                    const allContent = [
+                        ...movieData.results.map(movie => ({
+                            id: movie.id,
+                            title: movie.title,
+                            poster_path: movie.poster_path,
+                            release_date: movie.release_date,
+                            vote_average: movie.vote_average,
+                            popularity: movie.popularity,
+                            type: 'movie'
+                        })),
+                        ...tvData.results.map(tv => ({
+                            id: tv.id,
+                            title: tv.name,
+                            poster_path: tv.poster_path,
+                            release_date: tv.first_air_date,
+                            vote_average: tv.vote_average,
+                            popularity: tv.popularity,
+                            type: 'tv'
+                        }))
+                    ];
+                    
+                    // 포스터가 있는 작품만 필터링
+                    const filteredContent = allContent
+                        .filter(item => item.poster_path)
+                        .sort((a, b) => b.popularity - a.popularity);
+                    
+                    return {
+                        movies: filteredContent,
+                        total_pages: Math.max(movieData.total_pages, tvData.total_pages)
+                    };
+                } catch (error) {
+                    console.error('TMDB 검색 API 오류:', error);
+                    return {
+                        movies: [],
+                        total_pages: 0
+                    };
+                }
+            }
+        };
+        const otts = [
+            {name:"넷플릭스",logo:"./모아_OTT_로고이미지/btn_squircle_netflix.png"},
+            {name:"디즈니+",logo:"./모아_OTT_로고이미지/btn_squircle_disneyplus.png"},
+            {name:"왓챠",logo:"./모아_OTT_로고이미지/btn_squircle_watcha.png"},
+            {name:"티빙",logo:"./모아_OTT_로고이미지/btn_squircle_tving.png"},
+            {name:"쿠팡플레이",logo:"./모아_OTT_로고이미지/btn_squircle_coupangplay.png"},
+            {name:"웨이브",logo:"./모아_OTT_로고이미지/btn_squircle_wavve.png"},
+            {name:"라프텔",logo:"./모아_OTT_로고이미지/btn_squircle_laftel.png"},
+            {name:"애플티비+",logo:"./모아_OTT_로고이미지/btn_squircle_appletv.png"},
+            {name:"아마존프라임",logo:"./모아_OTT_로고이미지/btn_squircle_amazon.png"},
+            {name:"U+모바일tv",logo:"./모아_OTT_로고이미지/btn_squircle_lguplus.png"}
+        ];
+
+        const switchStep = (targetStep) => { Object.values(steps).forEach(s => s.classList.add('hidden')); if(steps[targetStep]) steps[targetStep].classList.remove('hidden'); };
+        const createRatingInput = (movieId) => { const c=document.createElement("div");c.className="rating-container";for(let i=10;i>=1;i--){const v=i/2,r=document.createElement("input");r.type="radio",r.id=`rating-${movieId}-${v}`,r.name=`rating-${movieId}`,r.value=v;const l=document.createElement("label");l.htmlFor=r.id,l.innerHTML=`<i class="fas fa-star"></i>`,c.appendChild(r),c.appendChild(l)}return c; };
+        const createGridCard = (movie) => { 
+            const c = document.createElement("div");
+            c.className = "grid-card";
+            c.dataset.movieId = movie.id;
+            const r = createRatingInput(movie.id);
+            r.addEventListener("change", handleRatingChange);
+            
+            const posterUrl = movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDQwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMTcxNzE3Ii8+CjxwYXRoIGQ9Ik0yMDAgMjAwTDE1MCAzMDBMMjAwIDQwMEwyNTAgMzAwTDIwMCAyMDBaIiBmaWxsPSIjNjY2NjY2Ii8+Cjx0ZXh0IHg9IjIwMCIgeT0iNTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5OTk5IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K';
+            
+            c.innerHTML = `
+                <div class="poster-container aspect-[2/3] rounded-lg overflow-hidden bg-zinc-900 border-2 border-transparent relative mb-3 transition-all duration-200">
+                    <img src="${posterUrl}" alt="${movie.title}" class="poster-img w-full h-full object-cover" loading="lazy" 
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDQwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMTcxNzE3Ii8+CjxwYXRoIGQ9Ik0yMDAgMjAwTDE1MCAzMDBMMjAwIDQwMEwyNTAgMzAwTDIwMCAyMDBaIiBmaWxsPSIjNjY2NjY2Ii8+Cjx0ZXh0IHg9IjIwMCIgeT0iNTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5OTk5IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K'">
+                    <div class="rated-badge absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-yellow-400 font-bold px-2 py-1 rounded-full text-sm opacity-0 transform scale-90 transition-all z-10">
+                        <i class="fa-solid fa-star"></i>
+                        <span class="rated-score"></span>
+                    </div>
+                </div>
+                <div class="text-center space-y-2">
+                    <h3 class="text-white font-bold text-base truncate px-1">${movie.title}</h3>
+                </div>
+            `;
+            c.querySelector(".text-center").appendChild(r);
+            return c; 
+        };
+        
+        const renderCardState = (card, movieId) => {
+            const rating = movieRatings[movieId];
+            const scoreEl = card.querySelector('.rated-score');
+            card.classList.remove("is-rated");
+            card.querySelectorAll('input[type="radio"]').forEach(radio => { radio.checked = false; });
+            if (typeof rating === "number") {
+                card.classList.add("is-rated");
+                scoreEl.textContent = rating.toFixed(1);
+                const targetRadio = card.querySelector(`input[value="${rating}"]`);
+                if (targetRadio) { targetRadio.checked = true; }
+            }
+        };
+
+        function renderMilestones() {
+            const maxCount = milestones[milestones.length-1].count;
+            milestones.forEach((m, i) => {
+                const milestoneEl = document.createElement('div');
+                milestoneEl.className = 'milestone';
+                milestoneEl.dataset.count = m.count;
+                milestoneEl.innerHTML = `<div class="milestone-icon-wrapper"><i class="${m.icon}"></i></div><div class="milestone-label">${m.label}</div><div class="milestone-reward">${m.count}개</div>`;
+                milestoneEl.style.left = `${(m.count / maxCount) * 100}%`;
+                milestoneEl.style.transform = i === milestones.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)';
+                milestoneTrackContainer.appendChild(milestoneEl);
+            });
+        }
+        
+        const updateProgress = () => {
+            const ratedCount = Object.keys(movieRatings).length;
+            progressEls.count.textContent = ratedCount;
+            const maxCount = milestones[milestones.length - 1].count;
+            progressEls.trackProgress.style.width = `${Math.min((ratedCount / maxCount) * 100, 100)}%`;
+
+            let nextMilestone = null;
+            document.querySelectorAll('.milestone').forEach(el => {
+                const milestoneCount = parseInt(el.dataset.count);
+                el.classList.remove('completed', 'active');
+                if (ratedCount >= milestoneCount) {
+                    el.classList.add('completed');
+                } else {
+                    if (!nextMilestone) {
+                        nextMilestone = { count: milestoneCount, label: el.querySelector('.milestone-label').textContent };
+                        el.classList.add('active');
+                    }
+                }
+            });
+            
+            if (ratedCount < milestones[0].count) {
+                buttons.nextToOtt.textContent = "기본 추천으로 시작";
+                progressEls.goalText.innerHTML = `첫 목표! <span class="font-bold text-white">[${milestones[0].label}]</span>까지 <span class="font-bold text-purple-400">${milestones[0].count - ratedCount}개</span> 남았어요.`;
+            } else {
+                buttons.nextToOtt.textContent = "다음";
+                if (nextMilestone) {
+                    progressEls.goalText.innerHTML = `다음 목표! <span class="font-bold text-white">[${nextMilestone.label}]</span>까지 <span class="font-bold text-purple-400">${nextMilestone.count - ratedCount}개</span>`;
+                } else {
+                    progressEls.goalText.innerHTML = `<span class="font-bold text-yellow-400">모든 목표 달성! 완벽해요!</span>`;
+                }
+            }
+        };
+
+        async function loadAndRenderMovies() { 
+            if (isLoading) return; 
+            isLoading = true; 
+            loaderContainer.innerHTML = `<div class="w-8 h-8 border-4 border-zinc-700 border-t-purple-500 rounded-full animate-spin"></div>`; 
+            
+            try {
+                const { movies, total_pages } = await tmdbAPI.fetchPopularMovies(currentPage);
+                
+                if (movies.length === 0) {
+                    loaderContainer.innerHTML = `<p class="text-zinc-400 text-center">더 이상 불러올 영화가 없습니다.</p>`;
+                    isLoading = false;
+                    return;
+                }
+                
+                movies.forEach(movie => { 
+                    if (movie.poster_path) { // 포스터가 있는 영화만 표시
+                        const card = createGridCard(movie); 
+                        movieGrid.appendChild(card); 
+                        renderCardState(card, movie.id); 
+                    }
+                }); 
+                
+                currentPage++;
+                if (currentPage > total_pages) {
+                    loaderContainer.innerHTML = `<p class="text-zinc-400 text-center">모든 영화를 불러왔습니다.</p>`;
+                } else {
+                    loaderContainer.innerHTML = "";
+                }
+            } catch (error) {
+                console.error('영화 로딩 오류:', error);
+                loaderContainer.innerHTML = `<p class="text-red-400 text-center">영화를 불러오는 중 오류가 발생했습니다.</p>`;
+            }
+            
+            isLoading = false; 
+        }
+        function handleRatingChange(e) { const card = e.target.closest(".grid-card"), movieId = card.dataset.movieId; movieRatings[movieId] = parseFloat(e.target.value); renderCardState(card, movieId); updateProgress(); card.classList.add("rated-animation"); setTimeout(() => card.classList.remove("rated-animation"), 400); }
+        
+        let searchTimeout;
+        let isSearchMode = false;
+        let searchQuery = '';
+        
+        searchInput.addEventListener('input', () => { 
+            clearTimeout(searchTimeout); 
+            searchTimeout = setTimeout(async () => { 
+                const query = searchInput.value.trim();
+                
+                if (query === '') {
+                    // 검색어가 비어있으면 인기 영화로 돌아가기
+                    if (isSearchMode) {
+                        isSearchMode = false;
+                        searchQuery = '';
+                        currentPage = 1;
+                        movieGrid.innerHTML = '';
+                        await loadAndRenderMovies();
+                    }
+                    return;
+                }
+                
+                // 검색어가 있으면 TMDB 검색 API 호출
+                if (query !== searchQuery) {
+                    searchQuery = query;
+                    isSearchMode = true;
+                    currentPage = 1;
+                    movieGrid.innerHTML = '';
+                    await searchAndRenderMovies(query);
+                }
+            }, 500); 
+        });
+        
+        async function searchAndRenderMovies(query) {
+            if (isLoading) return;
+            isLoading = true;
+            loaderContainer.innerHTML = `<div class="w-8 h-8 border-4 border-zinc-700 border-t-purple-500 rounded-full animate-spin"></div>`;
+            
+            try {
+                const { movies, total_pages } = await tmdbAPI.searchMovies(query, currentPage);
+                
+                if (movies.length === 0) {
+                    loaderContainer.innerHTML = `<p class="text-zinc-400 text-center">'${query}'에 대한 검색 결과가 없습니다.</p>`;
+                    isLoading = false;
+                    return;
+                }
+                
+                movies.forEach(movie => {
+                    if (movie.poster_path) {
+                        const card = createGridCard(movie);
+                        movieGrid.appendChild(card);
+                        renderCardState(card, movie.id);
+                    }
+                });
+                
+                currentPage++;
+                if (currentPage > total_pages) {
+                    loaderContainer.innerHTML = `<p class="text-zinc-400 text-center">검색 결과를 모두 불러왔습니다.</p>`;
+                } else {
+                    loaderContainer.innerHTML = "";
+                }
+            } catch (error) {
+                console.error('검색 오류:', error);
+                loaderContainer.innerHTML = `<p class="text-red-400 text-center">검색 중 오류가 발생했습니다.</p>`;
+            }
+            
+            isLoading = false;
+        }
+        
+        const scrollListener = () => { 
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) { 
+                if (isSearchMode) {
+                    searchAndRenderMovies(searchQuery);
+                } else {
+                    loadAndRenderMovies(); 
+                }
+            } 
+        };
+        
+        buttons.start.addEventListener('click', () => { switchStep('step2'); loadAndRenderMovies(); updateProgress(); window.addEventListener('scroll', scrollListener); });
+        buttons.skipOnboarding.addEventListener('click', () => switchStep('step_skipped'));
+        buttons.exitOnboarding.addEventListener('click', () => { switchStep('step_skipped'); window.removeEventListener('scroll', scrollListener); });
+        
+        const goToNextStep = () => { switchStep('step3'); window.removeEventListener('scroll', scrollListener); renderOttGrid(); };
+        buttons.nextToOtt.addEventListener('click', goToNextStep);
+        
+        buttons.backToStep2.addEventListener('click', () => { switchStep('step2'); window.addEventListener('scroll', scrollListener); });
+        buttons.finish.addEventListener('click', () => { switchStep('step_loading'); runAnalysisAnimation(); });
+        
+        buttons.goHome.addEventListener('click', () => window.location.href = './02 홈화면_리뉴얼V12.html');
+        buttons.goHomeFromSkip.addEventListener('click', () => window.location.href = './02 홈화면_리뉴얼V12.html');
+
+        function renderOttGrid() {
+            const ottGrid = document.getElementById('ott-grid');
+            ottGrid.innerHTML = '';
+            otts.forEach(ott => {
+                const isSelected = selectedOTTs.includes(ott.name);
+                const ottCard = document.createElement('button');
+                ottCard.className = `p-4 rounded-lg flex flex-col items-center justify-center gap-3 transition-all border-2 ${isSelected ? 'border-purple-400 ring-2 ring-purple-400/50 bg-zinc-900' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}`;
+                ottCard.dataset.ottName = ott.name;
+                ottCard.innerHTML = `<img src="${ott.logo}" alt="${ott.name}" class="w-12 h-12 rounded-md object-contain"><span class="font-semibold text-white">${ott.name}</span>`;
+                ottGrid.appendChild(ottCard);
+            });
+        }
+        
+        document.getElementById('ott-grid').addEventListener('click', e => {
+            const ottCard = e.target.closest('button[data-ott-name]');
+            if (!ottCard) return;
+            const ottName = ottCard.dataset.ottName;
+            const index = selectedOTTs.indexOf(ottName);
+            if (index > -1) { selectedOTTs.splice(index, 1); } else { selectedOTTs.push(ottName); }
+            renderOttGrid();
+        });
+        
+        function runAnalysisAnimation() {
+            const analysisContainer = document.getElementById('analysis-container');
+            const analysisText = document.getElementById('analysis-text');
+            analysisContainer.innerHTML = `<canvas id="analysis-canvas"></canvas><div id="analysis-core" class="analysis-core"></div>`;
+            const analysisCore = document.getElementById('analysis-core');
+            const analysisCanvas = document.getElementById('analysis-canvas');
+            const ctx = analysisCanvas.getContext('2d');
+            let particles = [];
+            
+            function resizeCanvas() { analysisCanvas.width = analysisContainer.clientWidth; analysisCanvas.height = analysisContainer.clientHeight; }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            class Particle {
+                constructor(x, y, radius, color, velocity) { this.x = x; this.y = y; this.radius = radius; this.color = color; this.velocity = velocity; this.alpha = 1; }
+                draw() { ctx.save(); ctx.globalAlpha = this.alpha; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false); ctx.fillStyle = this.color; ctx.fill(); ctx.restore(); }
+                update() { this.x += this.velocity.x; this.y += this.velocity.y; this.alpha -= 0.003; this.draw(); }
+            }
+            function animateParticles() { requestAnimationFrame(animateParticles); ctx.clearRect(0, 0, analysisCanvas.width, analysisCanvas.height); particles.forEach((p, i) => { if (p.alpha <= 0) { particles.splice(i, 1); } else { p.update(); } }); }
+            animateParticles();
+
+            const analysisSteps = [{ text: "별점 데이터를 취합하는 중...", duration: 2000, stage: 'stage-1' },{ text: "선호 장르 패턴 확인...", duration: 2000, stage: 'stage-2' },{ text: "최종 취향 리포트 생성!", duration: 2000, stage: 'stage-3' }];
+            let currentStep = 0;
+            function nextStep() {
+                if (currentStep >= analysisSteps.length) { setTimeout(() => switchStep("step_done"), 1000); return; }
+                const step = analysisSteps[currentStep];
+                analysisText.textContent = step.text;
+                analysisCore.className = `analysis-core ${step.stage}`;
+                const centerX = analysisCanvas.width / 2;
+                const centerY = analysisCanvas.height / 2;
+                for (let i = 0; i < 30; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    particles.push(new Particle(centerX, centerY, Math.random()*2+1, `rgba(167, 139, 250, ${Math.random()*.5+.2})`, {x:Math.cos(angle)*(Math.random()*2+1), y:Math.sin(angle)*(Math.random()*2+1)}));
+                }
+                currentStep++;
+                setTimeout(nextStep, step.duration);
+            }
+            nextStep();
+        }
+
+        renderMilestones();
+        updateProgress();
+    });
+    </script>
+</body>
+</html>
